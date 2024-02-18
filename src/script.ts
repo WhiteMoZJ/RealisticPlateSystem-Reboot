@@ -6,7 +6,7 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { Item } from '../types/models/eft/presetBuild/IPresetBuildActionRequestData';
+import { IArmorType } from "@spt-aki/models/eft/common/IGlobals"
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -17,8 +17,8 @@ let Plates = [] as string[];
 let FullPlates = [] as string[];
 // let armPlates = [] as string[];
 let scavPlates = [] as string[];
-let scavStomachPlates = [] as string[];
-// let scavArmPlates = [] as string[]; // shouldn't spawn with them but jic
+let scavFullPlates = [] as string[];
+// let scavArmPlates = [] as string[];
 let locales: ILocaleBase;
 
 export const dictionaryCN: Record<string, string> =
@@ -43,8 +43,7 @@ export const level: Record<number, string> =
 };
 
 const config = require("../config.json") as IConfig;
-// const template = require("../db/template.json");
-const weightRetainPer = config.GenerationConfig.VestWeightRetainPercent / 100;
+const weightRetainPer = 0.25
 
 class plates implements IPostDBLoadMod {
     public postDBLoad(container: DependencyContainer): void {
@@ -115,6 +114,16 @@ class plates implements IPostDBLoadMod {
     public createPlates(): void {
         for (let material in database.globals.config.ArmorMaterials) {
             if (material == "Glass") continue; // no glass plate
+
+            const d = database.globals.config.ArmorMaterials[material].Destructibility
+            const ed = database.globals.config.ArmorMaterials[material].ExplosionDestructibility
+
+            database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
+            database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
+
+            Logger.info(`[WM-RPSR] MaterialsTweaked ${material} Destructibility: ${d} -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
+            Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility: ${ed} -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
+
             for (let i = 2; i != (config.GenerationConfig.MaxClass + 1); i++) {
                 let loyalLevel =
                     i < 2
@@ -161,7 +170,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                armorPlate._props.RepairCost = 80 * priceMult * i;
+                armorPlate._props.RepairCost = 8 * priceMult * i;
                 items[armorPlate._id] = armorPlate
 
                 locales.global["en"][`${armorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
@@ -203,7 +212,10 @@ class plates implements IPostDBLoadMod {
 
                 database.traders["5ac3b934156ae10c4430e83c"].assort.loyal_level_items[armorPlate._id] = loyalLevel;
 
-                if (i <= config.BotGenConfig.MaxScavPlateLevel) scavPlates.push(armorPlate._id);
+                if (i <= config.BotGenConfig.MaxScavPlateLevel) {
+                    scavPlates.push(armorPlate._id);
+                    scavFullPlates.push(armorPlate._id);
+                }
                 Plates.push(armorPlate._id);
                 FullPlates.push(armorPlate._id);
 
@@ -231,7 +243,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat;
                 fullArmorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                fullArmorPlate._props.RepairCost = 80 * priceMult * i;
+                fullArmorPlate._props.RepairCost = 8 * priceMult * i;
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
@@ -274,7 +286,7 @@ class plates implements IPostDBLoadMod {
 
                 database.traders["5ac3b934156ae10c4430e83c"].assort.loyal_level_items[fullArmorPlate._id] = loyalLevel;
 
-                if (i <= config.BotGenConfig.MaxScavPlateLevel) scavStomachPlates.push(fullArmorPlate._id);
+                if (i <= config.BotGenConfig.MaxScavPlateLevel) scavFullPlates.push(fullArmorPlate._id);
                 FullPlates.push(fullArmorPlate._id);
             }
         }
@@ -399,10 +411,34 @@ class plates implements IPostDBLoadMod {
                 }
 
                 // HPC
-                if (item._id == "63737f448b28897f2802b874") {
+                else if (item._id == "63737f448b28897f2802b874") {
                     item._props.weaponErgonomicPenalty = 0;
                     item._props.speedPenaltyPercent = -1;
                     item._props.mousePenalty = 0;
+                    item._props.armorClass = 1;
+                }
+
+                // TT SK
+                else if (item._id == "628cd624459354321c4b7fa2") {
+                    item._props.weaponErgonomicPenalty = 0;
+                    item._props.speedPenaltyPercent = -1;
+                    item._props.mousePenalty = 0;
+                    item._props.armorClass = 1;
+                }
+
+                // S&S
+                else if (item._id == "628b9784bcf6e2659e09b8a2" || item._id == "628b9c7d45122232a872358f") {
+                    item._props.weaponErgonomicPenalty = -1;
+                    item._props.speedPenaltyPercent = 0;
+                    item._props.mousePenalty = 0;
+                    item._props.armorClass = 1;
+                }
+
+                // MBSS
+                else if (item._id == "64a5366719bab53bd203bf33") {
+                    item._props.weaponErgonomicPenalty = -1;
+                    item._props.speedPenaltyPercent = 0;
+                    item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
                 }
 
@@ -438,7 +474,7 @@ class plates implements IPostDBLoadMod {
                     bot.chances.mods.mod_equipment_full = isBoss ? config.BotGenConfig.BossFullPlateChance : isScav ? config.BotGenConfig.ScavFullPlateChance : config.BotGenConfig.BaseFullPlateChance;
 
                     if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates};
-                    else bot.inventory.mods[item._id] = { "mod_equipment_full": isScav ? scavStomachPlates : FullPlates };
+                    else bot.inventory.mods[item._id] = { "mod_equipment_full": isScav ? scavFullPlates : FullPlates };
                 });
             }
         });
@@ -454,8 +490,6 @@ interface IConfig {
 interface IGenerationConfig {
     MaxClass: number
     IgnoreIntegratedArmors: boolean
-    VestWeightRetainPercent: number
-    MaterialPenaltyMultCoeff: number
 }
 
 interface IBotGenerationConfig {
@@ -484,6 +518,8 @@ interface IMaterialConfig {
     PenaltyMultiplier: number
     BluntThroughput: number
     PriceMultiplier: number
+    Destructibility: number
+    ExplosionDestructibility: number
 }
 
 module.exports = { mod: new plates() };
