@@ -2,7 +2,8 @@
     "GenerationConfig":
     {
         "MaxClass": 6,
-        "IgnoreIntegratedArmors": true
+        "IgnoreIntegratedArmors": true,
+        "ChangeMaterialDestructibility": true
     },
     "BotGenConfig":
     {
@@ -23,7 +24,7 @@
             "DurabilityBase": -10,
             "WeightMultiplier": 0.7,
             "PenaltyMultiplier": 0.5,
-            "BluntThroughput": 0.3,
+            "BluntThroughput": 0.25,
             "PriceMultiplier": 2,
             "Destructibility": 0.3375,
             "ExplosionDestructibility": 0.3
@@ -33,18 +34,18 @@
             "DurabilityBase": -50,
             "WeightMultiplier": 0.7,
             "PenaltyMultiplier": 0.5,
-            "BluntThroughput": 0.55,
+            "BluntThroughput": 0.5,
             "PriceMultiplier": 0.8,
             "Destructibility": 0.1875,
             "ExplosionDestructibility": 0.15
         },
         "Ceramic":
         {
-            "DurabilityBase": -20,
+            "DurabilityBase": -15,
             "WeightMultiplier": 1.2,
             "PenaltyMultiplier": 1.2,
-            "BluntThroughput": 0.28,
-            "PriceMultiplier": 1,
+            "BluntThroughput": 0.23,
+            "PriceMultiplier": 0.8,
             "Destructibility": 0.6,
             "ExplosionDestructibility": 0.45
         },
@@ -53,7 +54,7 @@
             "DurabilityBase": 10,
             "WeightMultiplier": 1.4,
             "PenaltyMultiplier": 1,
-            "BluntThroughput": 0.25,
+            "BluntThroughput": 0.2,
             "PriceMultiplier": 1.2,
             "Destructibility": 0.4125,
             "ExplosionDestructibility": 0.375
@@ -63,7 +64,7 @@
             "DurabilityBase": -10,
             "WeightMultiplier": 1,
             "PenaltyMultiplier": 0.75,
-            "BluntThroughput": 0.33,
+            "BluntThroughput": 0.28,
             "PriceMultiplier": 0.8,
             "Destructibility": 0.45,
             "ExplosionDestructibility": 0.45
@@ -73,9 +74,9 @@
             "DurabilityBase": 0,
             "WeightMultiplier": 1.2,
             "PenaltyMultiplier": 1,
-            "BluntThroughput": 0.2,
+            "BluntThroughput": 0.15,
             "PriceMultiplier": 1.2,
-            "Destructibility": 0.375,
+            "Destructibility": 0.35,
             "ExplosionDestructibility": 0.2
         },
         "ArmoredSteel":
@@ -83,10 +84,10 @@
             "DurabilityBase": 20,
             "WeightMultiplier": 1.5,
             "PenaltyMultiplier": 1.5,
-            "BluntThroughput": 0.35,
+            "BluntThroughput": 0.3,
             "PriceMultiplier": 1.4,
-            "Destructibility": 0.525,
-            "ExplosionDestructibility": 0.45
+            "Destructibility": 0.4,
+            "ExplosionDestructibility": 0.4
         }
     }
 }

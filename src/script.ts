@@ -7,6 +7,7 @@ import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
 import { IArmorType } from "@spt-aki/models/eft/common/IGlobals"
+import { Repairable } from '../types/models/eft/common/tables/IItem';
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -115,14 +116,13 @@ class plates implements IPostDBLoadMod {
         for (let material in database.globals.config.ArmorMaterials) {
             if (material == "Glass") continue; // no glass plate
 
-            const d = database.globals.config.ArmorMaterials[material].Destructibility
-            const ed = database.globals.config.ArmorMaterials[material].ExplosionDestructibility
+            if (config.GenerationConfig.ChangeMaterialDestructibility) {
+                database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
+                database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
 
-            database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
-            database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
-
-            Logger.info(`[WM-RPSR] MaterialsTweaked ${material} Destructibility: ${d} -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
-            Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility: ${ed} -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
+                Logger.info(`[WM-RPSR] MaterialsTweaked ${material} Destructibility -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
+                Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
+            }
 
             for (let i = 2; i != (config.GenerationConfig.MaxClass + 1); i++) {
                 let loyalLevel =
@@ -144,6 +144,7 @@ class plates implements IPostDBLoadMod {
                     continue;
                 }
                 if (material == "Aluminium" && i >= 5) continue;
+                if (material == "UHMWPE" && i == 6) continue;
                 if (material == "Titan" && i == 3) continue;
 
                 // for plate only protect chest/throax
@@ -170,7 +171,8 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                armorPlate._props.RepairCost = 8 * priceMult * i;
+                armorPlate._props.RepairCost = 14 * priceMult * i;
+
                 items[armorPlate._id] = armorPlate
 
                 locales.global["en"][`${armorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
@@ -242,8 +244,8 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.mousePenalty = i * -0.3 * materialPenaltyMult;
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat;
-                fullArmorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                fullArmorPlate._props.RepairCost = 8 * priceMult * i;
+                fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
+                fullArmorPlate._props.RepairCost = 17 * priceMult * i;
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
@@ -490,6 +492,7 @@ interface IConfig {
 interface IGenerationConfig {
     MaxClass: number
     IgnoreIntegratedArmors: boolean
+    ChangeMaterialDestructibility: boolean
 }
 
 interface IBotGenerationConfig {
