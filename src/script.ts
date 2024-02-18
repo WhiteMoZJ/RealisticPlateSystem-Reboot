@@ -32,6 +32,16 @@ export const dictionaryCN: Record<string, string> =
     "ArmoredSteel": "装甲钢"
 };
 
+export const level: Record<number, string> =
+{
+    1: "Ⅰ",
+    2: "Ⅱ",
+    3: "Ⅲ",
+    4: "Ⅳ",
+    5: "Ⅴ",
+    6: "Ⅵ"
+};
+
 const config = require("../config.json") as IConfig;
 // const template = require("../db/template.json");
 const weightRetainPer = config.GenerationConfig.VestWeightRetainPercent / 100;
@@ -154,13 +164,13 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.RepairCost = 80 * priceMult * i;
                 items[armorPlate._id] = armorPlate
 
-                locales.global["en"][`${armorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
-                locales.global["en"][`${armorPlate._id} ShortName`] = `L${i} ${material == "ArmoredSteel" ? "Steel" : material} C.`;
-                locales.global["en"][`${armorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${i} protection designed for use in a plate carrier to protect the vitals.`;
+                locales.global["en"][`${armorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
+                locales.global["en"][`${armorPlate._id} ShortName`] = `${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} C.`;
+                locales.global["en"][`${armorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed for use in a plate carrier to protect the vitals.`;
 
-                locales.global["ch"][`${armorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 防弹插板`;
-                locales.global["ch"][`${armorPlate._id} ShortName`] = `L${i} ${dictionaryCN[material]} C.`;
-                locales.global["ch"][`${armorPlate._id} Description`] = `${dictionaryCN[material]}制${i}级保护的多重防弹插板，设计用于防弹背心插槽，以保护生命体征。`;
+                locales.global["ch"][`${armorPlate._id} Name`] = `Class ${level[i]} ${dictionaryCN[material]} 防弹插板`;
+                locales.global["ch"][`${armorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} C.`;
+                locales.global["ch"][`${armorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于防弹背心插槽，以保护生命体征。`;
 
                 database.templates.handbook.Items.push(
                     {
@@ -225,13 +235,13 @@ class plates implements IPostDBLoadMod {
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
-                locales.global["en"][`${fullArmorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Full-Size Plate`;
-                locales.global["en"][`${fullArmorPlate._id} ShortName`] = `L${i} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
-                locales.global["en"][`${fullArmorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${i} protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it.`;
+                locales.global["en"][`${fullArmorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Full-Size Plate`;
+                locales.global["en"][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
+                locales.global["en"][`${fullArmorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it.`;
 
-                locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 全尺寸防弹插板`;
-                locales.global["ch"][`${fullArmorPlate._id} ShortName`] = `L${i} ${dictionaryCN[material]} F.`;
-                locales.global["ch"][`${fullArmorPlate._id} Description`] = `${dictionaryCN[material]}制${i}级保护的多重防弹插板，设计用于全尺寸防弹背心以保护胃部，也就是说，只要足够大以容纳它。`;
+                locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${level[i]} ${dictionaryCN[material]} 全尺寸防弹插板`;
+                locales.global["ch"][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} F.`;
+                locales.global["ch"][`${fullArmorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于全尺寸防弹背心以保护胃部，也就是说，只要足够大以容纳它。`;
 
                 database.templates.handbook.Items.push(
                     {
@@ -324,15 +334,15 @@ class plates implements IPostDBLoadMod {
                 }
 
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
+                let hasArms = item._props.armorZone.includes("LeftArm");
 
                 item._props.Weight *= weightRetainPer;
-                item._props.weaponErgonomicPenalty = -1;
-                item._props.speedPenaltyPercent = -1;
-                item._props.mousePenalty = -1;
+                item._props.weaponErgonomicPenalty /= 3;
+                item._props.speedPenaltyPercent /= 3;
+                item._props.mousePenalty /= 3;
 
-                if ((item._props.ArmorType == "Heavy" && item._parent == "5448e54d4bdc2dcc718b4568")) {
+                if (item._props.ArmorType == "Heavy" || hasArms) {
                     item._props.armorClass = 3;
-                    item._props.speedPenaltyPercent -= 1;
                 }
 
                 else {
@@ -360,7 +370,6 @@ class plates implements IPostDBLoadMod {
                             "_mergeSlotWithChildren": true,
                             _proto: "55d30c4c4bdc2db4468b457e"
                         });
-                    item._props.speedPenaltyPercent -= 1;
                 }
                 else {
                     item._props.Slots.push(
@@ -379,7 +388,6 @@ class plates implements IPostDBLoadMod {
                             "_mergeSlotWithChildren": true,
                             _proto: "55d30c4c4bdc2db4468b457e"
                         });
-                    item._props.speedPenaltyPercent -= 1;
                 }
 
                 // 511 Hexgrid
