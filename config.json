@@ -1,0 +1,79 @@
+{
+    "GenerationConfig":
+    {
+        "MaxClass": 6,
+        "IgnoreIntegratedArmors": true,
+        "VestWeightRetainPercent": 30
+    },
+    "BotGenConfig":
+    {
+        "BaseChestPlateChance": 100,
+        "BaseFullPlateChance": 80,
+
+        "BossChestPlateChance": 100,
+        "BossFullPlateChance": 100,
+
+        "MaxScavPlateLevel": 4,
+        "ScavChestPlateChance": 60,
+        "ScavFullPlateChance": 40
+    },
+    "MaterialsConfig":
+    {
+        "UHMWPE":
+        {
+            "DurabilityBase": -10,
+            "WeightMultiplier": 0.7,
+            "PenaltyMultiplier": 0.5,
+            "BluntThroughput": 0.3,
+            "PriceMultiplier": 2
+        },
+        "Aramid":
+        {
+            "DurabilityBase": -50,
+            "WeightMultiplier": 0.7,
+            "PenaltyMultiplier": 0.5,
+            "BluntThroughput": 0.55,
+            "PriceMultiplier": 0.8
+        },
+        "Ceramic":
+        {
+            "DurabilityBase": -20,
+            "WeightMultiplier": 1.2,
+            "PenaltyMultiplier": 1.2,
+            "BluntThroughput": 0.28,
+            "PriceMultiplier": 1
+        },
+        "Titan":
+        {
+            "DurabilityBase": 10,
+            "WeightMultiplier": 1.4,
+            "PenaltyMultiplier": 1,
+            "BluntThroughput": 0.25,
+            "PriceMultiplier": 1.2
+        },
+        "Aluminium":
+        {
+            "DurabilityBase": -10,
+            "WeightMultiplier": 1,
+            "PenaltyMultiplier": 0.75,
+            "BluntThroughput": 0.33,
+            "PriceMultiplier": 0.8
+        },
+        "Combined":
+        {
+            "DurabilityBase": 0,
+            "WeightMultiplier": 1.2,
+            "PenaltyMultiplier": 1,
+            "BluntThroughput": 0.2,
+            "PriceMultiplier": 1.2
+        },
+        "ArmoredSteel":
+        {
+            "DurabilityBase": 20,
+            "WeightMultiplier": 1.5,
+            "PenaltyMultiplier": 1.5,
+            "BluntThroughput": 0.35,
+            "PriceMultiplier": 1.4
+        }
+    }
+}
