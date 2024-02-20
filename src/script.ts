@@ -24,7 +24,7 @@ let locales: ILocaleBase;
 
 export const dictionaryCN: Record<string, string> =
 {
-    "UHMWPE": "超聚乙烯",
+    "UHMWPE": "高分子PE",
     "Aramid": "芳纶",
     "Ceramic": "陶瓷",
     "Titan": "钛",
@@ -41,6 +41,7 @@ export const level: Record<number, string> =
     4: "Ⅳ",
     5: "Ⅴ",
     6: "Ⅵ"
+    // you can add more if you need
 };
 
 const config = require("../config.json") as IConfig;
@@ -117,6 +118,7 @@ class plates implements IPostDBLoadMod {
             if (material == "Glass") continue; // no glass plate
 
             if (config.GenerationConfig.ChangeMaterialDestructibility) {
+                // new destructibility from 0.14 version ETF
                 database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
                 database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
 
@@ -124,7 +126,7 @@ class plates implements IPostDBLoadMod {
                 Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
             }
 
-            for (let i = 2; i != (config.GenerationConfig.MaxClass + 1); i++) {
+            for (let i = 3; i != (config.GenerationConfig.MaxClass + 1); i++) {
                 let loyalLevel =
                     i < 2
                         ? 0
@@ -139,10 +141,11 @@ class plates implements IPostDBLoadMod {
                 let bluntMat = config.MaterialsConfig[material].BluntThroughput;
                 let durBase = config.MaterialsConfig[material].DurabilityBase;
                 let priceMult = config.MaterialsConfig[material].PriceMultiplier
-
-                if (material == "Aramid" || i <= 3) {
+                
+                if (material == "Aramid") {
                     continue;
                 }
+
                 if (material == "Aluminium" && i >= 5) continue;
                 if (material == "UHMWPE" && i == 6) continue;
                 if (material == "Titan" && i == 3) continue;
@@ -296,6 +299,15 @@ class plates implements IPostDBLoadMod {
 
     public tweakCarriers(): void {
         Object.values(items).forEach(item => {
+            if (item._parent == "5a341c4086f77401f2541505" && item._props.armorClass > 0) {
+                // increase headwear durability
+                item._props.Durability *= 1.5;
+                item._props.MaxDurability *= 1.5;
+
+                Logger.info(`[WM-RPSR] Tweaked Headwear[${item._id}]`);
+                return;
+            }
+
             if (item._parent == "5448e5284bdc2dcb718b4567" && item._props.armorClass > 0 || item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0) {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
@@ -350,10 +362,9 @@ class plates implements IPostDBLoadMod {
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
                 let hasArms = item._props.armorZone.includes("LeftArm");
 
-                item._props.Weight *= weightRetainPer;
-                item._props.weaponErgonomicPenalty /= 3;
-                item._props.speedPenaltyPercent /= 3;
-                item._props.mousePenalty /= 3;
+                item._props.weaponErgonomicPenalty /= 4;
+                item._props.speedPenaltyPercent /= 4;
+                item._props.mousePenalty /= 4;
 
                 if (item._props.ArmorType == "Heavy" || hasArms) {
                     item._props.armorClass = 3;
@@ -444,6 +455,9 @@ class plates implements IPostDBLoadMod {
                     item._props.armorClass = 1;
                 }
 
+                else 
+                    item._props.Weight *= weightRetainPer;
+
                 let price = database.templates.prices[item._id];
                 price ??= Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
 
@@ -466,7 +480,7 @@ class plates implements IPostDBLoadMod {
                     }
                 }
 
-                Logger.info(`[WM-RPSR] Tweaked ${item._id}`);
+                Logger.info(`[WM-RPSR] Tweaked Armor[${item._id}]`);
 
                 Object.values(database.bots.types).forEach(bot => {
                     let isScav = bot.appearance.body["5cc2e59214c02e000f16684e"] != null;
