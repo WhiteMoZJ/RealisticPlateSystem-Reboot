@@ -126,6 +126,8 @@ class plates implements IPostDBLoadMod {
                 Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
             }
 
+            if (material == "Aramid") continue;
+
             for (let i = 3; i != (config.GenerationConfig.MaxClass + 1); i++) {
                 let loyalLevel =
                     i < 2
@@ -140,11 +142,7 @@ class plates implements IPostDBLoadMod {
                 let materialPenaltyMult = config.MaterialsConfig[material].PenaltyMultiplier;
                 let bluntMat = config.MaterialsConfig[material].BluntThroughput;
                 let durBase = config.MaterialsConfig[material].DurabilityBase;
-                let priceMult = config.MaterialsConfig[material].PriceMultiplier
-                
-                if (material == "Aramid") {
-                    continue;
-                }
+                let priceMult = config.MaterialsConfig[material].PriceMultiplier                
 
                 if (material == "Aluminium" && i >= 5) continue;
                 if (material == "UHMWPE" && i == 6) continue;
@@ -202,6 +200,7 @@ class plates implements IPostDBLoadMod {
                         "slotId": "hideout",
                         "upd": {
                             "StackObjectsCount": 99999999,
+                            "BuyRestrictionMax": 30 / i, 
                             "UnlimitedCount": true
                         }
                     }
@@ -246,7 +245,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.speedPenaltyPercent = i * -0.4 * materialPenaltyMult;
                 fullArmorPlate._props.mousePenalty = i * -0.3 * materialPenaltyMult;
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
-                fullArmorPlate._props.BluntThroughput = bluntMat;
+                fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 17 * priceMult * i;
 
@@ -276,6 +275,7 @@ class plates implements IPostDBLoadMod {
                         "slotId": "hideout",
                         "upd": {
                             "StackObjectsCount": 99999999,
+                            "BuyRestrictionMax": 30 / i, 
                             "UnlimitedCount": true
                         }
                     }
@@ -285,7 +285,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 8400 * i * priceMult
+                            count: 14500 * i * priceMult
                         }]
                     ]
 
