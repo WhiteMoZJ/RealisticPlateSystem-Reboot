@@ -13,7 +13,7 @@ let Logger: ILogger;
 let database: IDatabaseTables;
 let jsonUtil: JsonUtil;
 let items: Record<string, ITemplateItem>;
-let convertedCarriers = [] as string[];
+// let convertedCarriers = [] as string[];
 let Plates = [] as string[];
 let FullPlates = [] as string[];
 // let armPlates = [] as string[];
@@ -45,7 +45,7 @@ export const level: Record<number, string> =
 };
 
 const config = require("../config.json") as IConfig;
-const weightRetainPer = 0.25
+const weightRetainPer = 0.2;
 
 class plates implements IPostDBLoadMod {
     public postDBLoad(container: DependencyContainer): void {
@@ -111,12 +111,34 @@ class plates implements IPostDBLoadMod {
                 "Price": 350000,
             }
         );
+
+        database.traders["5ac3b934156ae10c4430e83c"].assort.items.push(
+            {
+                "_id": "plateContainer",
+                "_tpl": "plateContainer",
+                "parentId": "hideout",
+                "slotId": "hideout",
+                "upd": {
+                    "StackObjectsCount": 99999999,
+                    "BuyRestrictionMax": 2, 
+                    "UnlimitedCount": true
+                }
+            }
+        );
+
+        database.traders["5ac3b934156ae10c4430e83c"].assort.barter_scheme["plateContainer"] =
+            [
+                [{
+                    _tpl: "5449016a4bdc2d6f028b456f",
+                    count: 350000
+                }]
+            ]
+
+        database.traders["5ac3b934156ae10c4430e83c"].assort.loyal_level_items["plateContainer"] = 2;
     }
 
     public createPlates(): void {
         for (let material in database.globals.config.ArmorMaterials) {
-            if (material == "Glass") continue; // no glass plate
-
             if (config.GenerationConfig.ChangeMaterialDestructibility) {
                 // new destructibility from 0.14 version ETF
                 database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
@@ -126,7 +148,8 @@ class plates implements IPostDBLoadMod {
                 Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
             }
 
-            if (material == "Aramid") continue;
+            if (material == "Glass") continue; // no glass plate
+            if (material == "Aramid") continue; // prepare for arm plates
 
             for (let i = 3; i != (config.GenerationConfig.MaxClass + 1); i++) {
                 let loyalLevel =
@@ -176,11 +199,11 @@ class plates implements IPostDBLoadMod {
 
                 items[armorPlate._id] = armorPlate
 
-                locales.global["en"][`${armorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
+                locales.global["en"][`${armorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
                 locales.global["en"][`${armorPlate._id} ShortName`] = `${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} C.`;
                 locales.global["en"][`${armorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed for use in a plate carrier to protect the vitals.`;
 
-                locales.global["ch"][`${armorPlate._id} Name`] = `Class ${level[i]} ${dictionaryCN[material]} 防弹插板`;
+                locales.global["ch"][`${armorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 防弹插板`;
                 locales.global["ch"][`${armorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} C.`;
                 locales.global["ch"][`${armorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于防弹背心插槽，以保护生命体征。`;
 
@@ -188,7 +211,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": armorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 10500 * i * priceMult
+                        "Price": 5500 * i * priceMult
                     }
                 );
 
@@ -210,7 +233,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 10500 * i * priceMult
+                            count: 5500 * i * priceMult
                         }]
                     ];
 
@@ -251,8 +274,8 @@ class plates implements IPostDBLoadMod {
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
-                locales.global["en"][`${fullArmorPlate._id} Name`] = `Class ${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} Full-Size Plate`;
-                locales.global["en"][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
+                locales.global["en"][`${fullArmorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Full-Size Plate`;
+                locales.global["en"][`${fullArmorPlate._id} ShortName`] = `${i} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
                 locales.global["en"][`${fullArmorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it.`;
 
                 locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${level[i]} ${dictionaryCN[material]} 全尺寸防弹插板`;
@@ -263,7 +286,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": fullArmorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 14500 * i * priceMult
+                        "Price": 7500 * i * priceMult
                     }
                 );
 
@@ -285,7 +308,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 14500 * i * priceMult
+                            count: 7500 * i * priceMult
                         }]
                     ]
 
@@ -455,15 +478,15 @@ class plates implements IPostDBLoadMod {
                     item._props.armorClass = 1;
                 }
 
-                else 
-                    item._props.Weight *= weightRetainPer;
+                item._props.Weight *= weightRetainPer;
+                item._props.BluntThroughput *= 1.5;
 
                 let price = database.templates.prices[item._id];
                 price ??= Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
 
-                price = ((price * 0.2).toString().split(".")[0]) as unknown as number;
+                price = ((price * 0.3).toString().split(".")[0]) as unknown as number;
 
-                convertedCarriers.push(item._id);
+                // convertedCarriers.push(item._id);
 
                 Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
 
@@ -476,7 +499,7 @@ class plates implements IPostDBLoadMod {
 
                     if (index != -1) {
                         let id = database.traders[trader].assort.items[index]._id;
-                        database.traders[trader].assort.barter_scheme[id][0][0].count *= 0.5;
+                        database.traders[trader].assort.barter_scheme[id][0][0].count *= 0.3;
                     }
                 }
 

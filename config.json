@@ -88,6 +88,11 @@
             "PriceMultiplier": 1.4,
             "Destructibility": 0.4,
             "ExplosionDestructibility": 0.4
+        },
+        "Glass":
+        {
+            "Destructibility": 0.6,
+            "ExplosionDestructibility": 0.6
         }
     }
 }
