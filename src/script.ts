@@ -6,20 +6,16 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { IArmorType } from "@spt-aki/models/eft/common/IGlobals"
-import { Repairable } from '../types/models/eft/common/tables/IItem';
+import { Item } from '../types/models/eft/hideout/IHideoutSingleProductionStartRequestData';
 
 let Logger: ILogger;
 let database: IDatabaseTables;
 let jsonUtil: JsonUtil;
 let items: Record<string, ITemplateItem>;
-// let convertedCarriers = [] as string[];
 let Plates = [] as string[];
 let FullPlates = [] as string[];
-// let armPlates = [] as string[];
 let scavPlates = [] as string[];
 let scavFullPlates = [] as string[];
-// let scavArmPlates = [] as string[];
 let locales: ILocaleBase;
 
 export const dictionaryCN: Record<string, string> =
@@ -61,7 +57,7 @@ class plates implements IPostDBLoadMod {
             this.createPlates();
             this.tweakCarriers();
             this.createContainer();
-
+            this.assignArmorPenRequirements();
         } catch (e) {
             Logger.error(`[WM-RPSR] Unable to generate, exception thrown => ${e}`);
         }
@@ -120,7 +116,7 @@ class plates implements IPostDBLoadMod {
                 "slotId": "hideout",
                 "upd": {
                     "StackObjectsCount": 99999999,
-                    "BuyRestrictionMax": 2, 
+                    "BuyRestrictionMax": 2,
                     "UnlimitedCount": true
                 }
             }
@@ -165,7 +161,7 @@ class plates implements IPostDBLoadMod {
                 let materialPenaltyMult = config.MaterialsConfig[material].PenaltyMultiplier;
                 let bluntMat = config.MaterialsConfig[material].BluntThroughput;
                 let durBase = config.MaterialsConfig[material].DurabilityBase;
-                let priceMult = config.MaterialsConfig[material].PriceMultiplier                
+                let priceMult = config.MaterialsConfig[material].PriceMultiplier
 
                 if (material == "Aluminium" && i >= 5) continue;
                 if (material == "UHMWPE" && i == 6) continue;
@@ -186,7 +182,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.Width = 2;
                 armorPlate._props.Weight *= i * materialMult * 0.3;
                 armorPlate._props.armorClass = i;
-                armorPlate._props.armorZone = [ "Chest" ];
+                armorPlate._props.armorZone = ["Chest"];
                 armorPlate._props.Durability = 80 + durBase + (i * 5);
                 armorPlate._props.MaxDurability = 80 + durBase + (i * 5);
                 armorPlate._props.ArmorMaterial = material;
@@ -195,7 +191,8 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                armorPlate._props.RepairCost = 14 * priceMult * i;
+                armorPlate._props.RepairCost = 12 * priceMult * i;
+                armorPlate._props.LootExperience = 5 * i;
 
                 items[armorPlate._id] = armorPlate
 
@@ -223,7 +220,7 @@ class plates implements IPostDBLoadMod {
                         "slotId": "hideout",
                         "upd": {
                             "StackObjectsCount": 99999999,
-                            "BuyRestrictionMax": 30 / i, 
+                            "BuyRestrictionMax": 30 / i,
                             "UnlimitedCount": true
                         }
                     }
@@ -261,7 +258,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.Width = 2;
                 fullArmorPlate._props.Weight *= i * materialMult * 0.4;
                 fullArmorPlate._props.armorClass = i;
-                fullArmorPlate._props.armorZone = [ "Chest", "Stomach" ];
+                fullArmorPlate._props.armorZone = ["Chest", "Stomach"];
                 fullArmorPlate._props.Durability = 110 + durBase + (i * 5);
                 fullArmorPlate._props.MaxDurability = 110 + durBase + (i * 5);
                 fullArmorPlate._props.ArmorMaterial = material;
@@ -270,7 +267,9 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
-                fullArmorPlate._props.RepairCost = 17 * priceMult * i;
+
+                fullArmorPlate._props.RepairCost = 15 * priceMult * i;
+                fullArmorPlate._props.LootExperience = 5 * i;
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
@@ -278,7 +277,7 @@ class plates implements IPostDBLoadMod {
                 locales.global["en"][`${fullArmorPlate._id} ShortName`] = `${i} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
                 locales.global["en"][`${fullArmorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it.`;
 
-                locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${level[i]} ${dictionaryCN[material]} 全尺寸防弹插板`;
+                locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 全尺寸防弹插板`;
                 locales.global["ch"][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} F.`;
                 locales.global["ch"][`${fullArmorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于全尺寸防弹背心以保护胃部，也就是说，只要足够大以容纳它。`;
 
@@ -298,7 +297,7 @@ class plates implements IPostDBLoadMod {
                         "slotId": "hideout",
                         "upd": {
                             "StackObjectsCount": 99999999,
-                            "BuyRestrictionMax": 30 / i, 
+                            "BuyRestrictionMax": 30 / i,
                             "UnlimitedCount": true
                         }
                     }
@@ -338,8 +337,9 @@ class plates implements IPostDBLoadMod {
                     return;
                 }
 
+                this.tweakArmorPart(item);
 
-                // SPECIAL ARMOR    
+                // Integrated Armor    
                 // 6B2
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
                     item._props.Durability *= 1.5;
@@ -382,6 +382,9 @@ class plates implements IPostDBLoadMod {
                     return;
                 }
 
+                if (item._parent == "5448e54d4bdc2dcc718b4568")
+                    item._props.MergesWithChildren = true;
+
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
                 let hasArms = item._props.armorZone.includes("LeftArm");
 
@@ -398,7 +401,6 @@ class plates implements IPostDBLoadMod {
                 }
 
                 item._props.ArmorMaterial = "Aramid";
-                item._props.MergesWithChildren = false;
                 item._props.Slots = [];
 
                 if (isSmallBoi) {
@@ -512,11 +514,73 @@ class plates implements IPostDBLoadMod {
                     bot.chances.mods.mod_equipment_plate = isBoss ? config.BotGenConfig.BossChestPlateChance : isScav ? config.BotGenConfig.ScavChestPlateChance : config.BotGenConfig.BaseChestPlateChance;
                     bot.chances.mods.mod_equipment_full = isBoss ? config.BotGenConfig.BossFullPlateChance : isScav ? config.BotGenConfig.ScavFullPlateChance : config.BotGenConfig.BaseFullPlateChance;
 
-                    if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates};
+                    if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates };
                     else bot.inventory.mods[item._id] = { "mod_equipment_full": isScav ? scavFullPlates : FullPlates };
                 });
             }
         });
+    }
+
+    public assignArmorPenRequirements(): void {
+        Object.values(items).forEach(item => {
+            if (item?._props?.armorClass !== undefined) {
+                if (item._props.ArmorMaterial === "Aramid") {
+                    if (item._props.armorClass === 1) {
+                        item._props.ConflictingItems[6] = "290"; //min velocity
+                        item._props.ConflictingItems[7] = "160"; //min KE
+                        item._props.ConflictingItems[8] = "10"; //min pen
+                    }
+                    if (item._props.armorClass === 2) {
+                        item._props.ConflictingItems[6] = "290"; //min velocity
+                        item._props.ConflictingItems[7] = "160"; //min KE
+                        item._props.ConflictingItems[8] = "20"; //min pen
+                    }
+                    if (item._props.armorClass === 3) {
+                        item._props.ConflictingItems[6] = "290"; //min velocity
+                        item._props.ConflictingItems[7] = "160"; //min KE
+                        item._props.ConflictingItems[8] = "30"; //min pen
+                    }
+                    if (item._props.armorClass === 4) {
+                        item._props.ConflictingItems[6] = "290"; //min velocity
+                        item._props.ConflictingItems[7] = "160"; //min KE
+                        item._props.ConflictingItems[8] = "40"; //min pen
+                    }
+                    if (item._props.armorClass === 5) {
+                        item._props.ConflictingItems[6] = "290"; //min velocity
+                        item._props.ConflictingItems[7] = "160"; //min KE
+                        item._props.ConflictingItems[8] = "50"; //min pen
+                    }
+                    if (item._props.armorClass === 6) {
+                        item._props.ConflictingItems[6] = ""; //min velocity
+                        item._props.ConflictingItems[7] = ""; //min KE
+                        item._props.ConflictingItems[8] = "60"; //min pen
+                    }
+                }
+            }
+        })
+        Logger.info("[WM-RPSR] Armor Pen Requirements Set");
+    }
+    
+    public tweakArmorPart(item: ITemplateItem): void {
+        // though only show "head" in game, hope it works
+        if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
+        item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
+        item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
+        item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
+        item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
+        item._id == "545cdb794bdc2d3a198b456a" || // 6B43
+        item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
+        item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
+        item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
+        item._id == "5c0e3eb886f7742015526062" || // 6B5-16
+        item._id == "5c0e446786f7742013381639" || // 6B5-15
+        item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
+        item._id == "60a283193cb70855c43a381d" // THOR
+        ) {
+            item._props.armorZone.push("Head");
+            item._props.headSegments = ["Nape", "Jaws"];
+        }
+        
     }
 }
 
