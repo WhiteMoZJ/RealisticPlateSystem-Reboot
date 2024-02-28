@@ -6,7 +6,7 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { Item } from '../types/models/eft/hideout/IHideoutSingleProductionStartRequestData';
+import { trace } from "console";
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -26,7 +26,8 @@ export const dictionaryCN: Record<string, string> =
     "Titan": "钛",
     "Aluminium": "铝",
     "Combined": "复合材料",
-    "ArmoredSteel": "装甲钢"
+    "ArmoredSteel": "装甲钢",
+    "Glass": "玻璃纤维"
 };
 
 export const level: Record<number, string> =
@@ -38,6 +39,17 @@ export const level: Record<number, string> =
     5: "Ⅴ",
     6: "Ⅵ"
     // you can add more if you need
+};
+
+export const materialColor: Record<string, string> = 
+{
+    "UHMWPE": "violet",
+    "Aramid": "default",
+    "Ceramic": "yellow",
+    "Titan": "blue",
+    "Aluminium": "orange",
+    "Combined": "green",
+    "ArmoredSteel": "red"
 };
 
 const config = require("../config.json") as IConfig;
@@ -136,12 +148,12 @@ class plates implements IPostDBLoadMod {
     public createPlates(): void {
         for (let material in database.globals.config.ArmorMaterials) {
             if (config.GenerationConfig.ChangeMaterialDestructibility) {
-                // new destructibility from 0.14 version ETF
+                // new destructibility
                 database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
                 database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
 
-                Logger.info(`[WM-RPSR] MaterialsTweaked ${material} Destructibility -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
-                Logger.info(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
+                Logger.success(`[WM-RPSR] MaterialsTweaked ${material} Destructibility -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
+                Logger.success(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
             }
 
             if (material == "Glass") continue; // no glass plate
@@ -183,16 +195,19 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.Weight *= i * materialMult * 0.3;
                 armorPlate._props.armorClass = i;
                 armorPlate._props.armorZone = ["Chest"];
-                armorPlate._props.Durability = 80 + durBase + (i * 5);
-                armorPlate._props.MaxDurability = 80 + durBase + (i * 5);
+                armorPlate._props.Durability = 40 + durBase + (i * 5);
+                armorPlate._props.MaxDurability = 40 + durBase + (i * 5);
                 armorPlate._props.ArmorMaterial = material;
                 armorPlate._props.speedPenaltyPercent = i * -0.3 * materialPenaltyMult;
                 armorPlate._props.mousePenalty = i * -0.2 * materialPenaltyMult;
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                armorPlate._props.RepairCost = 12 * priceMult * i;
+                armorPlate._props.RepairCost = 30 * priceMult;
                 armorPlate._props.LootExperience = 5 * i;
+
+                if (config.GenerationConfig.TweakBackgroundColor)
+                    armorPlate._props.BackgroundColor = materialColor[material];
 
                 items[armorPlate._id] = armorPlate
 
@@ -259,17 +274,19 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.Weight *= i * materialMult * 0.4;
                 fullArmorPlate._props.armorClass = i;
                 fullArmorPlate._props.armorZone = ["Chest", "Stomach"];
-                fullArmorPlate._props.Durability = 110 + durBase + (i * 5);
-                fullArmorPlate._props.MaxDurability = 110 + durBase + (i * 5);
+                fullArmorPlate._props.Durability = 55 + durBase + (i * 5);
+                fullArmorPlate._props.MaxDurability = 55 + durBase + (i * 5);
                 fullArmorPlate._props.ArmorMaterial = material;
                 fullArmorPlate._props.speedPenaltyPercent = i * -0.4 * materialPenaltyMult;
                 fullArmorPlate._props.mousePenalty = i * -0.3 * materialPenaltyMult;
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
-
-                fullArmorPlate._props.RepairCost = 15 * priceMult * i;
+                fullArmorPlate._props.RepairCost = 50 * priceMult;
                 fullArmorPlate._props.LootExperience = 5 * i;
+
+                if (config.GenerationConfig.TweakBackgroundColor)
+                    fullArmorPlate._props.BackgroundColor = materialColor[material];
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
@@ -334,11 +351,22 @@ class plates implements IPostDBLoadMod {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
                     item._props.MaxDurability *= 2;
+
+                    if (config.GenerationConfig.TweakBackgroundColor)
+                        item._props.BackgroundColor = materialColor["Aramid"];
+
                     return;
                 }
 
-                this.tweakArmorPart(item);
+                if (config.GenerationConfig.AdditionalArmorSegments) {
+                    this.tweakArmorPart(item);
+                }
+                // reduce repair cost
+                item._props.RepairCost /= 5;
 
+                if (config.GenerationConfig.TweakBackgroundColor && item._props.ArmorMaterial != undefined)
+                    item._props.BackgroundColor = materialColor[item._props.ArmorMaterial];
+                
                 // Integrated Armor    
                 // 6B2
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
@@ -388,9 +416,9 @@ class plates implements IPostDBLoadMod {
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
                 let hasArms = item._props.armorZone.includes("LeftArm");
 
-                item._props.weaponErgonomicPenalty /= 4;
-                item._props.speedPenaltyPercent /= 4;
-                item._props.mousePenalty /= 4;
+                item._props.weaponErgonomicPenalty /= 2;
+                item._props.speedPenaltyPercent /= 2;
+                item._props.mousePenalty /= 2;
 
                 if (item._props.ArmorType == "Heavy" || hasArms) {
                     item._props.armorClass = 3;
@@ -483,6 +511,9 @@ class plates implements IPostDBLoadMod {
                 item._props.Weight *= weightRetainPer;
                 item._props.BluntThroughput *= 1.5;
 
+                if (config.GenerationConfig.TweakBackgroundColor)
+                    item._props.BackgroundColor = materialColor["Aramid"];
+
                 let price = database.templates.prices[item._id];
                 price ??= Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
 
@@ -560,27 +591,26 @@ class plates implements IPostDBLoadMod {
         })
         Logger.info("[WM-RPSR] Armor Pen Requirements Set");
     }
-    
+
     public tweakArmorPart(item: ITemplateItem): void {
         // though only show "head" in game, hope it works
         if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
-        item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
-        item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
-        item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
-        item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
-        item._id == "545cdb794bdc2d3a198b456a" || // 6B43
-        item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
-        item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
-        item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
-        item._id == "5c0e3eb886f7742015526062" || // 6B5-16
-        item._id == "5c0e446786f7742013381639" || // 6B5-15
-        item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
-        item._id == "60a283193cb70855c43a381d" // THOR
+            item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
+            item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
+            item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
+            item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
+            item._id == "545cdb794bdc2d3a198b456a" || // 6B43
+            item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
+            item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
+            item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
+            item._id == "5c0e3eb886f7742015526062" || // 6B5-16
+            item._id == "5c0e446786f7742013381639" || // 6B5-15
+            item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
+            item._id == "60a283193cb70855c43a381d" // THOR
         ) {
             item._props.armorZone.push("Head");
             item._props.headSegments = ["Nape", "Jaws"];
         }
-        
     }
 }
 
@@ -594,6 +624,8 @@ interface IGenerationConfig {
     MaxClass: number
     IgnoreIntegratedArmors: boolean
     ChangeMaterialDestructibility: boolean
+    AdditionalArmorSegments: boolean
+    TweakBackgroundColor: boolean
 }
 
 interface IBotGenerationConfig {
