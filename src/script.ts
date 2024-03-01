@@ -6,7 +6,7 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { trace } from "console";
+import { Container } from '@spt-aki/models/eft/inventory/IInventoryBaseActionRequestData';
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -69,7 +69,7 @@ class plates implements IPostDBLoadMod {
             this.createPlates();
             this.tweakCarriers();
             this.createContainer();
-            this.assignArmorPenRequirements();
+            this.armorBluntMulti();
         } catch (e) {
             Logger.error(`[WM-RPSR] Unable to generate, exception thrown => ${e}`);
         }
@@ -205,6 +205,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
                 armorPlate._props.RepairCost = 30 * priceMult;
                 armorPlate._props.LootExperience = 5 * i;
+                armorPlate._props.ItemSound = "gear_helmet";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
                     armorPlate._props.BackgroundColor = materialColor[material];
@@ -223,7 +224,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": armorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 5500 * i * priceMult
+                        "Price": 3000 * i * priceMult
                     }
                 );
 
@@ -245,7 +246,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 5500 * i * priceMult
+                            count: 3000 * i * priceMult
                         }]
                     ];
 
@@ -284,6 +285,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 50 * priceMult;
                 fullArmorPlate._props.LootExperience = 5 * i;
+                fullArmorPlate._props.ItemSound = "gear_helmet";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
                     fullArmorPlate._props.BackgroundColor = materialColor[material];
@@ -302,7 +304,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": fullArmorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 7500 * i * priceMult
+                        "Price": 4500 * i * priceMult
                     }
                 );
 
@@ -324,7 +326,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 7500 * i * priceMult
+                            count: 4500 * i * priceMult
                         }]
                     ]
 
@@ -340,10 +342,19 @@ class plates implements IPostDBLoadMod {
         Object.values(items).forEach(item => {
             if (item._parent == "5a341c4086f77401f2541505" && item._props.armorClass > 0) {
                 // increase headwear durability
-                item._props.Durability *= 1.5;
-                item._props.MaxDurability *= 1.5;
+                item._props.Durability *= 1.1;
+                item._props.MaxDurability *= 1.1;
 
                 Logger.info(`[WM-RPSR] Tweaked Headwear[${item._id}]`);
+                return;
+            }
+
+            if (item._parent == "57bef4c42459772e8d35a53b" && item._props.armorClass > 0 && item._id.search(/plate/gi) == -1) {
+                // increase headwear durability
+                item._props.Durability *= 1.25;
+                item._props.MaxDurability *= 1.25;
+
+                Logger.info(`[WM-RPSR] Tweaked Armored Equipment[${item._id}]`);
                 return;
             }
 
@@ -422,10 +433,12 @@ class plates implements IPostDBLoadMod {
 
                 if (item._props.ArmorType == "Heavy" || hasArms) {
                     item._props.armorClass = 3;
+                    item._props.BluntThroughput *= 1.5;
                 }
 
                 else {
                     item._props.armorClass = 2;
+                    item._props.BluntThroughput *= 2;
                 }
 
                 item._props.ArmorMaterial = "Aramid";
@@ -509,19 +522,19 @@ class plates implements IPostDBLoadMod {
                 }
 
                 item._props.Weight *= weightRetainPer;
-                item._props.BluntThroughput *= 1.5;
 
                 if (config.GenerationConfig.TweakBackgroundColor)
                     item._props.BackgroundColor = materialColor["Aramid"];
 
                 let price = database.templates.prices[item._id];
-                price ??= Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
+                price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
 
                 price = ((price * 0.3).toString().split(".")[0]) as unknown as number;
 
                 // convertedCarriers.push(item._id);
 
                 Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
+                database.templates.prices[item._id] = price;
 
                 Logger.debug(`[DEBUG] ${item._id} price is ${database.templates.prices[item._id]} in prices.json and ${Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price} in handbook`)
                 for (let trader in database.traders) {
@@ -552,48 +565,47 @@ class plates implements IPostDBLoadMod {
         });
     }
 
-    public assignArmorPenRequirements(): void {
+    public armorBluntMulti(): void {
         Object.values(items).forEach(item => {
-            if (item?._props?.armorClass !== undefined) {
-                if (item._props.ArmorMaterial === "Aramid") {
-                    if (item._props.armorClass === 1) {
-                        item._props.ConflictingItems[6] = "290"; //min velocity
-                        item._props.ConflictingItems[7] = "160"; //min KE
-                        item._props.ConflictingItems[8] = "10"; //min pen
+            if (item?._props?.armorClass != undefined) {
+                let armorLevl: number = typeof item._props.armorClass === 'number' ? item._props.armorClass : parseInt(item._props.armorClass as string);
+                if (item._parent == "plate_category" && 
+                    item._props.armorClass != null && item._props.ArmorMaterial != "ArmoredSteel" && item._props.ArmorMaterial != "Titan") {
+                    if (armorLevl >= 3 && armorLevl <= 5) {
+                        item._props.BluntThroughput *= 1;
                     }
-                    if (item._props.armorClass === 2) {
-                        item._props.ConflictingItems[6] = "290"; //min velocity
-                        item._props.ConflictingItems[7] = "160"; //min KE
-                        item._props.ConflictingItems[8] = "20"; //min pen
+                    if (armorLevl === 6) {
+                        item._props.BluntThroughput *= 1.25;
                     }
-                    if (item._props.armorClass === 3) {
-                        item._props.ConflictingItems[6] = "290"; //min velocity
-                        item._props.ConflictingItems[7] = "160"; //min KE
-                        item._props.ConflictingItems[8] = "30"; //min pen
+                }
+                if ((item._parent == "5a341c4086f77401f2541505" || item._parent == "5a341c4686f77469e155819e") && item?._props.armorClass != null) {
+                    if (armorLevl === 3) {
+                        item._props.BluntThroughput *= 1.15;
                     }
-                    if (item._props.armorClass === 4) {
-                        item._props.ConflictingItems[6] = "290"; //min velocity
-                        item._props.ConflictingItems[7] = "160"; //min KE
-                        item._props.ConflictingItems[8] = "40"; //min pen
+                    if (armorLevl === 4) {
+                        item._props.BluntThroughput *= 1.35;
                     }
-                    if (item._props.armorClass === 5) {
-                        item._props.ConflictingItems[6] = "290"; //min velocity
-                        item._props.ConflictingItems[7] = "160"; //min KE
-                        item._props.ConflictingItems[8] = "50"; //min pen
+                    if (armorLevl === 5) {
+                        item._props.BluntThroughput *= 1.45;
                     }
-                    if (item._props.armorClass === 6) {
-                        item._props.ConflictingItems[6] = ""; //min velocity
-                        item._props.ConflictingItems[7] = ""; //min KE
-                        item._props.ConflictingItems[8] = "60"; //min pen
+                    if (armorLevl === 6) {
+                        item._props.BluntThroughput *= 1.25;
+                    }
+                }
+                if ((item._parent === "57bef4c42459772e8d35a53b") && item?._props.armorClass != null && item?._props.ArmorMaterial !== "Glass") {
+                    if (armorLevl === 3) {
+                        item._props.BluntThroughput *= 1.2;
+                    }
+                    if (armorLevl === 4) {
+                        item._props.BluntThroughput *= 1.3;
                     }
                 }
             }
         })
-        Logger.info("[WM-RPSR] Armor Pen Requirements Set");
     }
 
     public tweakArmorPart(item: ITemplateItem): void {
-        // though only show "head" in game, hope it works
+        // though only show nothing in game, hope it works
         if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
             item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
             item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
@@ -608,7 +620,6 @@ class plates implements IPostDBLoadMod {
             item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
             item._id == "60a283193cb70855c43a381d" // THOR
         ) {
-            item._props.armorZone.push("Head");
             item._props.headSegments = ["Nape", "Jaws"];
         }
     }
@@ -646,6 +657,7 @@ interface IMaterialsConfig {
     Aluminium: IMaterialConfig
     Combined: IMaterialConfig
     ArmoredSteel: IMaterialConfig
+    Glass: IMaterialConfig
 }
 
 interface IMaterialConfig {

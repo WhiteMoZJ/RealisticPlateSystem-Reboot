@@ -27,7 +27,7 @@
             "WeightMultiplier": 0.7,
             "PenaltyMultiplier": 0.5,
             "BluntThroughput": 0.15,
-            "PriceMultiplier": 2,
+            "PriceMultiplier": 1.8,
             "Destructibility": 0.13,
             "ExplosionDestructibility": 0.15
         },
@@ -36,7 +36,7 @@
             "DurabilityBase": -15,
             "WeightMultiplier": 0.6,
             "PenaltyMultiplier": 0.5,
-            "BluntThroughput": 0.5,
+            "BluntThroughput": 0.4,
             "PriceMultiplier": 1,
             "Destructibility": 0.22,
             "ExplosionDestructibility": 0.2
@@ -73,13 +73,13 @@
         },
         "Combined":
         {
-            "DurabilityBase": 0,
+            "DurabilityBase": 5,
             "WeightMultiplier": 0.9,
             "PenaltyMultiplier": 1,
             "BluntThroughput": 0.15,
-            "PriceMultiplier": 1.2,
-            "Destructibility": 0.13,
-            "ExplosionDestructibility": 0.13
+            "PriceMultiplier": 1,
+            "Destructibility": 0.16,
+            "ExplosionDestructibility": 0.16
         },
         "ArmoredSteel":
         {
@@ -87,8 +87,8 @@
             "WeightMultiplier": 1.2,
             "PenaltyMultiplier": 1.5,
             "BluntThroughput": 0.3,
-            "PriceMultiplier": 1.4,
-            "Destructibility": 0.1,
+            "PriceMultiplier": 1.3,
+            "Destructibility": 0.2,
             "ExplosionDestructibility": 0.15
         },
         "Glass":
