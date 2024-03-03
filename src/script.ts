@@ -6,7 +6,6 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { Container } from '@spt-aki/models/eft/inventory/IInventoryBaseActionRequestData';
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -285,7 +284,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 50 * priceMult;
                 fullArmorPlate._props.LootExperience = 5 * i;
-                fullArmorPlate._props.ItemSound = "gear_helmet";
+                fullArmorPlate._props.ItemSound = "container_case";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
                     fullArmorPlate._props.BackgroundColor = materialColor[material];
@@ -369,9 +368,9 @@ class plates implements IPostDBLoadMod {
                     return;
                 }
 
-                if (config.GenerationConfig.AdditionalArmorSegments) {
-                    this.tweakArmorPart(item);
-                }
+                // if (config.GenerationConfig.AdditionalArmorSegments) {
+                //     this.tweakArmorPart(item);
+                // }
                 // reduce repair cost
                 item._props.RepairCost /= 5;
 
@@ -381,65 +380,51 @@ class plates implements IPostDBLoadMod {
                 // Integrated Armor    
                 // 6B2
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
-                    item._props.Durability *= 1.5;
-                    item._props.MaxDurability *= 1.5;
+                    item._props.Durability = 128;
+                    item._props.MaxDurability = 128;
                     return;
                 }
 
                 // NPP KlASS Kora-Kulon
                 if (item._id == "64be79c487d1510151095552" || item._id == "64be79e2bf8412471d0d9bcc") {
-                    item._props.Durability *= 1.5;
-                    item._props.MaxDurability *= 1.5;
+                    item._props.Durability = 128;
+                    item._props.MaxDurability = 128;
                     return;
                 }
 
                 // MF-UNTAR
                 if (item._id == "5ab8e4ed86f7742d8e50c7fa") {
-                    item._props.Durability *= 2;
-                    item._props.MaxDurability *= 2;
+                    item._props.Durability = 100;
+                    item._props.MaxDurability = 100;
                     return;
                 }
 
                 // 6B5-16
                 if (item._id == "5c0e3eb886f7742015526062") {
-                    item._props.Durability *= 2;
-                    item._props.MaxDurability *= 2;
+                    item._props.Durability = 160;
+                    item._props.MaxDurability = 160;
                     return;
                 }
 
                 // 6B3TM-01
                 if (item._id == "5d5d646386f7742797261fd9") {
-                    item._props.Durability *= 4;
-                    item._props.MaxDurability *= 4;
+                    item._props.Durability = 86;
+                    item._props.MaxDurability = 86;
                     return;
                 }
 
                 // 6B5-15
                 if (item._id == "5c0e446786f7742013381639") {
-                    item._props.Durability *= 2;
-                    item._props.MaxDurability *= 2;
+                    item._props.Durability = 110;
+                    item._props.MaxDurability = 110;
                     return;
                 }
 
-                if (item._parent == "5448e54d4bdc2dcc718b4568")
+                if (item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0)
                     item._props.MergesWithChildren = true;
 
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
                 let hasArms = item._props.armorZone.includes("LeftArm");
-
-                item._props.weaponErgonomicPenalty /= 2;
-                item._props.speedPenaltyPercent /= 2;
-                item._props.mousePenalty /= 2;
-
-                if (item._props.ArmorType == "Heavy" || hasArms) {
-                    item._props.armorClass = 3;
-                    item._props.BluntThroughput *= 1.5;
-                }
-
-                else {
-                    item._props.armorClass = 2;
-                    item._props.BluntThroughput *= 2;
-                }
 
                 item._props.ArmorMaterial = "Aramid";
                 item._props.Slots = [];
@@ -487,6 +472,8 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent = -1;
                     item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
+                    item._props.Durability = 10;
+                    item._props.MaxDurability = 10;   
                 }
 
                 // HPC
@@ -495,6 +482,8 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent = -1;
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
+                    item._props.Durability = 10;
+                    item._props.MaxDurability = 10;
                 }
 
                 // TT SK
@@ -503,6 +492,8 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent = -1;
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
+                    item._props.Durability = 10;
+                    item._props.MaxDurability = 10;
                 }
 
                 // S&S
@@ -511,6 +502,8 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent = 0;
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
+                    item._props.Durability = 10;
+                    item._props.MaxDurability = 10;
                 }
 
                 // MBSS
@@ -519,12 +512,40 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent = 0;
                     item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
+                    item._props.Durability = 10;
+                    item._props.MaxDurability = 10;
+                }
+
+                // LBT 6094A
+                else if (item._id == "5e4abb5086f77406975c9342" || item._id == "6038b4b292ec1c3103795a0b" || item._id == "6038b4ca92ec1c3103795a0d" ||
+                        item._id == "010521_ARMR_SLICK_FDE000" || item._id == "010521_ARMR_SLICK_ODG000") {
+                    item._props.weaponErgonomicPenalty = 0;
+                    item._props.speedPenaltyPercent = 0;
+                    item._props.mousePenalty = 0;
+                    item._props.armorClass = 3;
+                    item._props.Durability = 100;
+                    item._props.MaxDurability = 100;
+                }
+
+                else {
+                    if (item._props.ArmorType == "Heavy" || hasArms) {
+                        item._props.armorClass = 3;
+                        item._props.Durability *= 3;
+                        item._props.MaxDurability *= 3;                 
+                    }
+                    else {
+                        item._props.armorClass = 2;
+                        item._props.Durability *= 2;
+                        item._props.MaxDurability *= 2;
+                    }
+                    
+                    item._props.BluntThroughput *= 1.5;
+                    item._props.weaponErgonomicPenalty /= 2;
+                    item._props.speedPenaltyPercent /= 2;
+                    item._props.mousePenalty /= 2;
                 }
 
                 item._props.Weight *= weightRetainPer;
-
-                if (config.GenerationConfig.TweakBackgroundColor)
-                    item._props.BackgroundColor = materialColor["Aramid"];
 
                 let price = database.templates.prices[item._id];
                 price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
@@ -604,25 +625,25 @@ class plates implements IPostDBLoadMod {
         })
     }
 
-    public tweakArmorPart(item: ITemplateItem): void {
-        // though only show nothing in game, hope it works
-        if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
-            item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
-            item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
-            item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
-            item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
-            item._id == "545cdb794bdc2d3a198b456a" || // 6B43
-            item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
-            item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
-            item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
-            item._id == "5c0e3eb886f7742015526062" || // 6B5-16
-            item._id == "5c0e446786f7742013381639" || // 6B5-15
-            item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
-            item._id == "60a283193cb70855c43a381d" // THOR
-        ) {
-            item._props.headSegments = ["Nape", "Jaws"];
-        }
-    }
+    // public tweakArmorPart(item: ITemplateItem): void {
+    //     // though only show nothing in game, hope it works
+    //     if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
+    //         item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
+    //         item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
+    //         item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
+    //         item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
+    //         item._id == "545cdb794bdc2d3a198b456a" || // 6B43
+    //         item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
+    //         item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
+    //         item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
+    //         item._id == "5c0e3eb886f7742015526062" || // 6B5-16
+    //         item._id == "5c0e446786f7742013381639" || // 6B5-15
+    //         item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
+    //         item._id == "60a283193cb70855c43a381d" // THOR
+    //     ) {
+    //         item._props.headSegments = ["Nape", "Jaws"];
+    //     }
+    // }
 }
 
 interface IConfig {

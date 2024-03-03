@@ -26,10 +26,10 @@
             "DurabilityBase": 0,
             "WeightMultiplier": 0.7,
             "PenaltyMultiplier": 0.5,
-            "BluntThroughput": 0.15,
-            "PriceMultiplier": 1.8,
-            "Destructibility": 0.13,
-            "ExplosionDestructibility": 0.15
+            "BluntThroughput": 0.18,
+            "PriceMultiplier": 1.5,
+            "Destructibility": 0.3375,
+            "ExplosionDestructibility": 0.3
         },
         "Aramid":
         {
@@ -38,58 +38,58 @@
             "PenaltyMultiplier": 0.5,
             "BluntThroughput": 0.4,
             "PriceMultiplier": 1,
-            "Destructibility": 0.22,
-            "ExplosionDestructibility": 0.2
+            "Destructibility": 0.1875,
+            "ExplosionDestructibility": 0.15
         },
         "Ceramic":
         {
             "DurabilityBase": -5,
             "WeightMultiplier": 1,
             "PenaltyMultiplier": 1.2,
-            "BluntThroughput": 0.23,
+            "BluntThroughput": 0.33,
             "PriceMultiplier": 0.8,
-            "Destructibility": 0.18,
-            "ExplosionDestructibility": 0.135
+            "Destructibility": 0.6,
+            "ExplosionDestructibility": 0.525
         },
         "Titan":
         {
-            "DurabilityBase": 5,
+            "DurabilityBase": 10,
             "WeightMultiplier": 1,
             "PenaltyMultiplier": 1,
-            "BluntThroughput": 0.2,
+            "BluntThroughput": 0.15,
             "PriceMultiplier": 1.2,
-            "Destructibility": 0.06,
-            "ExplosionDestructibility": 0.05
+            "Destructibility": 0.4125,
+            "ExplosionDestructibility": 0.375
         },
         "Aluminium":
         {
-            "DurabilityBase": -5,
+            "DurabilityBase": 5,
             "WeightMultiplier": 0.8,
             "PenaltyMultiplier": 0.75,
             "BluntThroughput": 0.28,
             "PriceMultiplier": 0.8,
-            "Destructibility": 0.15,
-            "ExplosionDestructibility": 0.15
+            "Destructibility": 0.45,
+            "ExplosionDestructibility": 0.45
         },
         "Combined":
         {
             "DurabilityBase": 5,
             "WeightMultiplier": 0.9,
             "PenaltyMultiplier": 1,
-            "BluntThroughput": 0.15,
+            "BluntThroughput": 0.2,
             "PriceMultiplier": 1,
-            "Destructibility": 0.16,
-            "ExplosionDestructibility": 0.16
+            "Destructibility": 0.375,
+            "ExplosionDestructibility": 0.2
         },
         "ArmoredSteel":
         {
-            "DurabilityBase": 10,
+            "DurabilityBase": 15,
             "WeightMultiplier": 1.2,
             "PenaltyMultiplier": 1.5,
             "BluntThroughput": 0.3,
-            "PriceMultiplier": 1.3,
-            "Destructibility": 0.2,
-            "ExplosionDestructibility": 0.15
+            "PriceMultiplier": 1.2,
+            "Destructibility": 0.525,
+            "ExplosionDestructibility": 0.45
         },
         "Glass":
         {
