@@ -1,11 +1,11 @@
 {
     "GenerationConfig":
     {
-        "MaxClass": 6,
         "IgnoreIntegratedArmors": true,
         "ChangeMaterialDestructibility": true,
         "AdditionalArmorSegments": true,
-        "TweakBackgroundColor": true
+        "TweakBackgroundColor": true,
+        "TweakAmmoDamage": false
     },
     "BotGenConfig":
     {

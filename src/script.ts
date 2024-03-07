@@ -158,7 +158,7 @@ class plates implements IPostDBLoadMod {
             if (material == "Glass") continue; // no glass plate
             if (material == "Aramid") continue; // prepare for arm plates
 
-            for (let i = 3; i != (config.GenerationConfig.MaxClass + 1); i++) {
+            for (let i = 3; i <= 6; i++) {
                 let loyalLevel =
                     i < 2
                         ? 0
@@ -203,7 +203,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
                 armorPlate._props.RepairCost = 30 * priceMult;
-                armorPlate._props.LootExperience = 5 * i;
+                armorPlate._props.LootExperience = i;
                 armorPlate._props.ItemSound = "gear_helmet";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
@@ -283,7 +283,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 50 * priceMult;
-                fullArmorPlate._props.LootExperience = 5 * i;
+                fullArmorPlate._props.LootExperience = i;
                 fullArmorPlate._props.ItemSound = "container_case";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
@@ -362,9 +362,6 @@ class plates implements IPostDBLoadMod {
                     item._props.Durability *= 2;
                     item._props.MaxDurability *= 2;
 
-                    if (config.GenerationConfig.TweakBackgroundColor)
-                        item._props.BackgroundColor = materialColor["Aramid"];
-
                     return;
                 }
 
@@ -373,9 +370,6 @@ class plates implements IPostDBLoadMod {
                 // }
                 // reduce repair cost
                 item._props.RepairCost /= 5;
-
-                if (config.GenerationConfig.TweakBackgroundColor && item._props.ArmorMaterial != undefined)
-                    item._props.BackgroundColor = materialColor[item._props.ArmorMaterial];
                 
                 // Integrated Armor    
                 // 6B2
@@ -593,36 +587,47 @@ class plates implements IPostDBLoadMod {
                 if (item._parent == "plate_category" && 
                     item._props.armorClass != null && item._props.ArmorMaterial != "ArmoredSteel" && item._props.ArmorMaterial != "Titan") {
                     if (armorLevl >= 3 && armorLevl <= 5) {
-                        item._props.BluntThroughput *= 1;
+                        item._props.BluntThroughput *= 1.25;
                     }
                     if (armorLevl === 6) {
-                        item._props.BluntThroughput *= 1.25;
+                        item._props.BluntThroughput *= 1;
                     }
                 }
                 if ((item._parent == "5a341c4086f77401f2541505" || item._parent == "5a341c4686f77469e155819e") && item?._props.armorClass != null) {
                     if (armorLevl === 3) {
-                        item._props.BluntThroughput *= 1.15;
-                    }
-                    if (armorLevl === 4) {
                         item._props.BluntThroughput *= 1.35;
                     }
+                    if (armorLevl === 4) {
+                        item._props.BluntThroughput *= 1.2;
+                    }
                     if (armorLevl === 5) {
-                        item._props.BluntThroughput *= 1.45;
+                        item._props.BluntThroughput *= 1.15;
                     }
                     if (armorLevl === 6) {
-                        item._props.BluntThroughput *= 1.25;
+                        item._props.BluntThroughput *= 1;
                     }
                 }
                 if ((item._parent === "57bef4c42459772e8d35a53b") && item?._props.armorClass != null && item?._props.ArmorMaterial !== "Glass") {
                     if (armorLevl === 3) {
-                        item._props.BluntThroughput *= 1.2;
+                        item._props.BluntThroughput *= 1.3;
                     }
                     if (armorLevl === 4) {
-                        item._props.BluntThroughput *= 1.3;
+                        item._props.BluntThroughput *= 1.2;
                     }
                 }
             }
         })
+    }
+
+    public tweakAmmoDamage(): void {
+        if (config.GenerationConfig.TweakAmmoDamage) {
+            Object.values(items).forEach(item => {
+                if (item._parent == "5485a8684bdc2da71d8b4567" && item._props.ArmorDamage != undefined) {
+                    item._props.ArmorDamage *= 0.9;                   
+                }
+            })
+            Logger.info(`[WM-RPSR] Tweaked Armor Damage`);
+        }
     }
 
     // public tweakArmorPart(item: ITemplateItem): void {
@@ -653,11 +658,11 @@ interface IConfig {
 }
 
 interface IGenerationConfig {
-    MaxClass: number
     IgnoreIntegratedArmors: boolean
     ChangeMaterialDestructibility: boolean
     AdditionalArmorSegments: boolean
     TweakBackgroundColor: boolean
+    TweakAmmoDamage: boolean
 }
 
 interface IBotGenerationConfig {
