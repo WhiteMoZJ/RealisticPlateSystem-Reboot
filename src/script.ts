@@ -6,6 +6,7 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
+import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -15,6 +16,8 @@ let Plates = [] as string[];
 let FullPlates = [] as string[];
 let scavPlates = [] as string[];
 let scavFullPlates = [] as string[];
+let bossPlates = [] as string[];
+let bossFullPlates = [] as string[];
 let locales: ILocaleBase;
 
 export const dictionaryCN: Record<string, string> =
@@ -55,7 +58,8 @@ const config = require("../config.json") as IConfig;
 const weightRetainPer = 0.2;
 
 class plates implements IPostDBLoadMod {
-    public postDBLoad(container: DependencyContainer): void {
+    public postDBLoad(container: DependencyContainer): void
+    {
         Logger = container.resolve<ILogger>("WinstonLogger");
         database = container.resolve<DatabaseServer>("DatabaseServer").getTables();
         jsonUtil = container.resolve<JsonUtil>("JsonUtil");
@@ -77,7 +81,7 @@ class plates implements IPostDBLoadMod {
         }
     }
 
-    public createHandbookCat(): void // meow
+    public createHandbookCat(): void
     {
         database.templates.handbook.Categories.push(
             {
@@ -92,7 +96,8 @@ class plates implements IPostDBLoadMod {
         locales.global["ch"]["plate_category"] = "防弹插板";
     }
 
-    public createContainer(): void {
+    public createContainer(): void
+    {
         let plateContainer = jsonUtil.clone(items["59fb042886f7746c5005a7b2"]);
         plateContainer._id = "plateContainer";
         plateContainer._props.Height = 3;
@@ -144,7 +149,8 @@ class plates implements IPostDBLoadMod {
         database.traders["5ac3b934156ae10c4430e83c"].assort.loyal_level_items["plateContainer"] = 2;
     }
 
-    public createPlates(): void {
+    public createPlates(): void
+    {
         for (let material in database.globals.config.ArmorMaterials) {
             if (config.GenerationConfig.ChangeMaterialDestructibility) {
                 // new destructibility
@@ -175,7 +181,6 @@ class plates implements IPostDBLoadMod {
                 let priceMult = config.MaterialsConfig[material].PriceMultiplier
 
                 if (material == "Aluminium" && i >= 5) continue;
-                if (material == "UHMWPE" && i == 6) continue;
                 if (material == "Titan" && i == 3) continue;
 
                 // for plate only protect chest/throax
@@ -202,7 +207,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
-                armorPlate._props.RepairCost = 30 * priceMult;
+                armorPlate._props.RepairCost = 50 * priceMult;
                 armorPlate._props.LootExperience = i;
                 armorPlate._props.ItemSound = "gear_helmet";
 
@@ -258,8 +263,14 @@ class plates implements IPostDBLoadMod {
                 Plates.push(armorPlate._id);
                 FullPlates.push(armorPlate._id);
 
+                if (i >= 5) {
+                    bossPlates.push(armorPlate._id);
+                    bossFullPlates.push(armorPlate._id);
+                }
+
                 // for full-size plate, stomach included
 
+                if (material == "UHMWPE" && i == 6) continue;
                 let fullArmorPlate = jsonUtil.clone(items["5648a7494bdc2d9d488b4583"]);
                 fullArmorPlate._id = `plate${i}FullPlate${material == "ArmoredSteel" ? "Steel" : material}`;
                 fullArmorPlate._parent = "57bef4c42459772e8d35a53b";
@@ -282,7 +293,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
-                fullArmorPlate._props.RepairCost = 50 * priceMult;
+                fullArmorPlate._props.RepairCost = 70 * priceMult;
                 fullArmorPlate._props.LootExperience = i;
                 fullArmorPlate._props.ItemSound = "container_case";
 
@@ -333,11 +344,15 @@ class plates implements IPostDBLoadMod {
 
                 if (i <= config.BotGenConfig.MaxScavPlateLevel) scavFullPlates.push(fullArmorPlate._id);
                 FullPlates.push(fullArmorPlate._id);
+                if (i >= 5) {
+                    bossFullPlates.push(fullArmorPlate._id);
+                }
             }
         }
     }
 
-    public tweakCarriers(): void {
+    public tweakCarriers(): void
+    {
         Object.values(items).forEach(item => {
             if (item._parent == "5a341c4086f77401f2541505" && item._props.armorClass > 0) {
                 // increase headwear durability
@@ -365,9 +380,6 @@ class plates implements IPostDBLoadMod {
                     return;
                 }
 
-                // if (config.GenerationConfig.AdditionalArmorSegments) {
-                //     this.tweakArmorPart(item);
-                // }
                 // reduce repair cost
                 item._props.RepairCost /= 5;
                 
@@ -420,9 +432,12 @@ class plates implements IPostDBLoadMod {
                 let isSmallBoi = !item._props.armorZone.includes("Stomach");
                 let hasArms = item._props.armorZone.includes("LeftArm");
 
+                let armorClass = item._props.armorClass;
+                let material = item._props.ArmorMaterial;
+
                 item._props.ArmorMaterial = "Aramid";
                 item._props.Slots = [];
-
+                
                 if (isSmallBoi) {
                     item._props.Slots.push(
                         {
@@ -538,20 +553,15 @@ class plates implements IPostDBLoadMod {
                     item._props.speedPenaltyPercent /= 2;
                     item._props.mousePenalty /= 2;
                 }
-
                 item._props.Weight *= weightRetainPer;
 
                 let price = database.templates.prices[item._id];
                 price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
-
                 price = ((price * 0.3).toString().split(".")[0]) as unknown as number;
-
-                // convertedCarriers.push(item._id);
 
                 Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
                 database.templates.prices[item._id] = price;
 
-                Logger.debug(`[DEBUG] ${item._id} price is ${database.templates.prices[item._id]} in prices.json and ${Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price} in handbook`)
                 for (let trader in database.traders) {
                     if (database.traders[trader].assort == undefined)
                         continue;
@@ -568,87 +578,40 @@ class plates implements IPostDBLoadMod {
 
                 Object.values(database.bots.types).forEach(bot => {
                     let isScav = bot.appearance.body["5cc2e59214c02e000f16684e"] != null;
-                    let isBoss = bot.lastName.length == 0; // bosses don't have last names
+
+                    let isBoss = bot.firstName.length == 1; // boss have only 1 first name
 
                     bot.chances.mods.mod_equipment_plate = isBoss ? config.BotGenConfig.BossChestPlateChance : isScav ? config.BotGenConfig.ScavChestPlateChance : config.BotGenConfig.BaseChestPlateChance;
                     bot.chances.mods.mod_equipment_full = isBoss ? config.BotGenConfig.BossFullPlateChance : isScav ? config.BotGenConfig.ScavFullPlateChance : config.BotGenConfig.BaseFullPlateChance;
 
-                    if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates };
-                    else bot.inventory.mods[item._id] = { "mod_equipment_full": isScav ? scavFullPlates : FullPlates };
+                    if (isBoss) {
+                        if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": bossPlates };
+                        else bot.inventory.mods[item._id] = { "mod_equipment_full": bossPlates };
+                    }
+                    else {
+                        if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates };
+                        else bot.inventory.mods[item._id] = { "mod_equipment_full": isScav ? scavFullPlates : FullPlates };
+                    }
                 });
             }
         });
     }
 
-    public armorBluntMulti(): void {
+    public armorBluntMulti(): void
+    {
         Object.values(items).forEach(item => {
-            if (item?._props?.armorClass != undefined) {
+            if (item._parent == "plate_category" && item._props.armorClass != null) {
                 let armorLevl: number = typeof item._props.armorClass === 'number' ? item._props.armorClass : parseInt(item._props.armorClass as string);
-                if (item._parent == "plate_category" && 
-                    item._props.armorClass != null && item._props.ArmorMaterial != "ArmoredSteel" && item._props.ArmorMaterial != "Titan") {
-                    if (armorLevl >= 3 && armorLevl <= 5) {
-                        item._props.BluntThroughput *= 1.25;
-                    }
-                    if (armorLevl === 6) {
-                        item._props.BluntThroughput *= 1;
-                    }
+                
+                if (armorLevl >= 3 && armorLevl <= 5) {
+                    item._props.BluntThroughput *= 1.25;
                 }
-                if ((item._parent == "5a341c4086f77401f2541505" || item._parent == "5a341c4686f77469e155819e") && item?._props.armorClass != null) {
-                    if (armorLevl === 3) {
-                        item._props.BluntThroughput *= 1.35;
-                    }
-                    if (armorLevl === 4) {
-                        item._props.BluntThroughput *= 1.2;
-                    }
-                    if (armorLevl === 5) {
-                        item._props.BluntThroughput *= 1.15;
-                    }
-                    if (armorLevl === 6) {
-                        item._props.BluntThroughput *= 1;
-                    }
-                }
-                if ((item._parent === "57bef4c42459772e8d35a53b") && item?._props.armorClass != null && item?._props.ArmorMaterial !== "Glass") {
-                    if (armorLevl === 3) {
-                        item._props.BluntThroughput *= 1.3;
-                    }
-                    if (armorLevl === 4) {
-                        item._props.BluntThroughput *= 1.2;
-                    }
+                if (armorLevl === 6) {
+                    item._props.BluntThroughput *= 1;
                 }
             }
         })
     }
-
-    public tweakAmmoDamage(): void {
-        if (config.GenerationConfig.TweakAmmoDamage) {
-            Object.values(items).forEach(item => {
-                if (item._parent == "5485a8684bdc2da71d8b4567" && item._props.ArmorDamage != undefined) {
-                    item._props.ArmorDamage *= 0.9;                   
-                }
-            })
-            Logger.info(`[WM-RPSR] Tweaked Armor Damage`);
-        }
-    }
-
-    // public tweakArmorPart(item: ITemplateItem): void {
-    //     // though only show nothing in game, hope it works
-    //     if (item._id == "5c0e5edb86f77461f55ed1f7" || // Zhuk
-    //         item._id == "5b44d22286f774172b0c9de8" || // BNTI Kirasa-N    
-    //         item._id == "5f5f41476bdad616ad46d631" || // BNTI Korund-VM
-    //         item._id == "5ab8e79e86f7742d8b372e78" || // BNTI Gzhel-K
-    //         item._id == "5c0e625a86f7742d77340f62" || // Zhuk-6a
-    //         item._id == "545cdb794bdc2d3a198b456a" || // 6B43
-    //         item._id == "5c0e57ba86f7747fa141986d" || item._id == "5c0e5bab86f77461f55ed1f3" || // 6B23
-    //         item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" || // 6B13
-    //         item._id == "5b44cd8b86f774503d30cba2" || item._id == "5b44cf1486f77431723e3d05" || item._id == "5b44d0de86f774503d30cba8" || // IOTV Gen4
-    //         item._id == "5c0e3eb886f7742015526062" || // 6B5-16
-    //         item._id == "5c0e446786f7742013381639" || // 6B5-15
-    //         item._id == "60a3c68c37ea821725773ef5" || item._id == "60a3c70cde5f453f634816a3" || // CQC
-    //         item._id == "60a283193cb70855c43a381d" // THOR
-    //     ) {
-    //         item._props.headSegments = ["Nape", "Jaws"];
-    //     }
-    // }
 }
 
 interface IConfig {
@@ -662,7 +625,6 @@ interface IGenerationConfig {
     ChangeMaterialDestructibility: boolean
     AdditionalArmorSegments: boolean
     TweakBackgroundColor: boolean
-    TweakAmmoDamage: boolean
 }
 
 interface IBotGenerationConfig {
