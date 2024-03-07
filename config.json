@@ -3,19 +3,18 @@
     {
         "IgnoreIntegratedArmors": true,
         "ChangeMaterialDestructibility": true,
-        "AdditionalArmorSegments": true,
         "TweakBackgroundColor": true
     },
     "BotGenConfig":
     {
-        "BaseChestPlateChance": 100,
+        "BaseChestPlateChance": 95,
         "BaseFullPlateChance": 80,
 
         "BossChestPlateChance": 100,
-        "BossFullPlateChance": 100,
+        "BossFullPlateChance": 90,
 
         "MaxScavPlateLevel": 4,
-        "ScavChestPlateChance": 60,
+        "ScavChestPlateChance": 75,
         "ScavFullPlateChance": 40
     },
     "MaterialsConfig":

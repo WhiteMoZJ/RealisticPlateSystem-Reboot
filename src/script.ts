@@ -6,7 +6,6 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
-import { IGlobals } from "@spt-aki/models/eft/common/IGlobals";
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -154,11 +153,14 @@ class plates implements IPostDBLoadMod {
         for (let material in database.globals.config.ArmorMaterials) {
             if (config.GenerationConfig.ChangeMaterialDestructibility) {
                 // new destructibility
+                let des = database.globals.config.ArmorMaterials[material].Destructibility;
+                let exp = database.globals.config.ArmorMaterials[material].ExplosionDestructibility;
+
                 database.globals.config.ArmorMaterials[material].Destructibility = config.MaterialsConfig[material].Destructibility;
                 database.globals.config.ArmorMaterials[material].ExplosionDestructibility = config.MaterialsConfig[material].ExplosionDestructibility;
 
-                Logger.success(`[WM-RPSR] MaterialsTweaked ${material} Destructibility -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
-                Logger.success(`[WM-RPSR] MaterialsTweaked ${material} ExplosionDestructibility -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
+                Logger.success(`[WM-RPSR] Tweaked Materials ${material} Destructibility ${des} -> ${database.globals.config.ArmorMaterials[material].Destructibility}`)
+                Logger.success(`[WM-RPSR] Tweaked Materials ${material} ExplosionDestructibility ${exp} -> ${database.globals.config.ArmorMaterials[material].ExplosionDestructibility}`)
             }
 
             if (material == "Glass") continue; // no glass plate
@@ -358,8 +360,6 @@ class plates implements IPostDBLoadMod {
                 // increase headwear durability
                 item._props.Durability *= 1.1;
                 item._props.MaxDurability *= 1.1;
-
-                Logger.info(`[WM-RPSR] Tweaked Headwear[${item._id}]`);
                 return;
             }
 
@@ -367,8 +367,6 @@ class plates implements IPostDBLoadMod {
                 // increase headwear durability
                 item._props.Durability *= 1.25;
                 item._props.MaxDurability *= 1.25;
-
-                Logger.info(`[WM-RPSR] Tweaked Armored Equipment[${item._id}]`);
                 return;
             }
 
@@ -376,12 +374,8 @@ class plates implements IPostDBLoadMod {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
                     item._props.MaxDurability *= 2;
-
                     return;
                 }
-
-                // reduce repair cost
-                item._props.RepairCost /= 5;
                 
                 // Integrated Armor    
                 // 6B2
@@ -429,7 +423,9 @@ class plates implements IPostDBLoadMod {
                 if (item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0)
                     item._props.MergesWithChildren = true;
 
-                let isSmallBoi = !item._props.armorZone.includes("Stomach");
+                let isSmallBoi = !(item._id == "0010321_GEARSET_QUICK000" || 
+                                    item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" ||
+                                    item._id == "5c0e5bab86f77461f55ed1f3" || item._id == "5c0e57ba86f7747fa141986d" || item._id == "5f5f41476bdad616ad46d631");
                 let hasArms = item._props.armorZone.includes("LeftArm");
 
                 let armorClass = item._props.armorClass;
@@ -439,8 +435,7 @@ class plates implements IPostDBLoadMod {
                 item._props.Slots = [];
                 
                 if (isSmallBoi) {
-                    item._props.Slots.push(
-                        {
+                    item._props.Slots.push({
                             "_name": "mod_equipment_plate",
                             "_id": `${item._id}_mainPlateSlot`,
                             "_parent": item._id,
@@ -454,11 +449,10 @@ class plates implements IPostDBLoadMod {
                             "_required": false,
                             "_mergeSlotWithChildren": true,
                             _proto: "55d30c4c4bdc2db4468b457e"
-                        });
+                    });
                 }
                 else {
-                    item._props.Slots.push(
-                        {
+                    item._props.Slots.push({
                             "_name": "mod_equipment_full",
                             "_id": `${item._id}_mainFullPlateSlot`,
                             "_parent": item._id,
@@ -472,7 +466,7 @@ class plates implements IPostDBLoadMod {
                             "_required": false,
                             "_mergeSlotWithChildren": true,
                             _proto: "55d30c4c4bdc2db4468b457e"
-                        });
+                    });
                 }
 
                 // 511 Hexgrid
@@ -482,7 +476,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;   
+                    item._props.MaxDurability = 10;  
                 }
 
                 // HPC
@@ -540,20 +534,26 @@ class plates implements IPostDBLoadMod {
                     if (item._props.ArmorType == "Heavy" || hasArms) {
                         item._props.armorClass = 3;
                         item._props.Durability *= 3;
-                        item._props.MaxDurability *= 3;                 
+                        item._props.MaxDurability *= 3;
+                        item._props.BluntThroughput *= 0.85;               
                     }
                     else {
                         item._props.armorClass = 2;
                         item._props.Durability *= 2;
                         item._props.MaxDurability *= 2;
+                        
                     }
                     
-                    item._props.BluntThroughput *= 1.5;
                     item._props.weaponErgonomicPenalty /= 2;
                     item._props.speedPenaltyPercent /= 2;
                     item._props.mousePenalty /= 2;
                 }
+
+                item._props.BluntThroughput *= 1.8;
                 item._props.Weight *= weightRetainPer;
+
+                // reduce repair cost
+                item._props.RepairCost /= 5;
 
                 let price = database.templates.prices[item._id];
                 price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
@@ -586,7 +586,7 @@ class plates implements IPostDBLoadMod {
 
                     if (isBoss) {
                         if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": bossPlates };
-                        else bot.inventory.mods[item._id] = { "mod_equipment_full": bossPlates };
+                        else bot.inventory.mods[item._id] = { "mod_equipment_full": bossFullPlates };
                     }
                     else {
                         if (isSmallBoi) bot.inventory.mods[item._id] = { "mod_equipment_plate": isScav ? scavPlates : Plates };
@@ -623,7 +623,6 @@ interface IConfig {
 interface IGenerationConfig {
     IgnoreIntegratedArmors: boolean
     ChangeMaterialDestructibility: boolean
-    AdditionalArmorSegments: boolean
     TweakBackgroundColor: boolean
 }
 
