@@ -18,18 +18,7 @@ let scavFullPlates = [] as string[];
 let bossPlates = [] as string[];
 let bossFullPlates = [] as string[];
 let locales: ILocaleBase;
-
-export const dictionaryCN: Record<string, string> =
-{
-    "UHMWPE": "高分子PE",
-    "Aramid": "芳纶",
-    "Ceramic": "陶瓷",
-    "Titan": "钛",
-    "Aluminium": "铝",
-    "Combined": "复合材料",
-    "ArmoredSteel": "装甲钢",
-    "Glass": "玻璃纤维"
-};
+// let translations: Record<string, Record<string, string>>
 
 export const level: Record<number, string> =
 {
@@ -50,6 +39,7 @@ export const levelColor: Record<number, string> =
 
 const config = require("../config.json") as IConfig;
 const weightRetainPer = 0.2;
+import translations from "./translations.json";
 
 class plates implements IPostDBLoadMod {
     public postDBLoad(container: DependencyContainer): void
@@ -85,9 +75,10 @@ class plates implements IPostDBLoadMod {
                 "Color": "",
                 "Order": "100"
             });
-
-        locales.global["en"]["plate_category"] = "Armor Plates";
-        locales.global["ch"]["plate_category"] = "防弹插板";
+        for (const lang in translations) {
+            locales.global[lang]["plate_category"] = translations[lang]["Armor Plates"];
+        }
+            
     }
 
     public createContainer(): void
@@ -100,15 +91,13 @@ class plates implements IPostDBLoadMod {
         plateContainer._props.ItemSound = "spec_armorrep";
         plateContainer._props.Grids[0]._props.filters[0].Filter = FullPlates;
 
-        items["plateContainer"] = plateContainer
-
-        locales.global["en"]["plateContainer Name"] = "Ballistic Plate Storage Bag";
-        locales.global["en"]["plateContainer ShortName"] = "Plate Bag";
-        locales.global["en"]["plateContainer Description"] = "A large, durable carry bag meant for easy storing and moving of multiple armor plates. Used commonly by military forces for rapid deployment and access of replacement ballistic plates for soldiers in combat zones.";
-
-        locales.global["ch"]["plateContainer Name"] = "插板储存袋";
-        locales.global["ch"]["plateContainer ShortName"] = "插板袋";
-        locales.global["ch"]["plateContainer Description"] = "一个大而耐用的手提袋，便于存放和运输多个装甲板。军队通常用于快速部署和为战区士兵提供替换防弹板。";
+        items[plateContainer._id] = plateContainer
+        for (const lang in translations) {
+            locales.global[lang]["plateContainer Name"] = translations[lang]["Bag"];
+            locales.global[lang]["plateContainer ShortName"] = translations[lang]["Bag_s"];
+            locales.global[lang]["plateContainer Description"] = translations[lang]["BagDescription"];
+        }
+        
 
         database.templates.handbook.Items.push(
             {
@@ -219,13 +208,11 @@ class plates implements IPostDBLoadMod {
 
                 items[armorPlate._id] = armorPlate
 
-                locales.global["en"][`${armorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Ballistic Plate`;
-                locales.global["en"][`${armorPlate._id} ShortName`] = `${level[i]} ${material == "ArmoredSteel" ? "Steel" : material} C.`;
-                locales.global["en"][`${armorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed for use in a plate carrier to protect the vitals.`;
-
-                locales.global["ch"][`${armorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 防弹插板`;
-                locales.global["ch"][`${armorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} C.`;
-                locales.global["ch"][`${armorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于防弹背心插槽，以保护生命体征。`;
+                for (const lang in translations) {
+                    locales.global[lang][`${armorPlate._id} Name`] = `${translations[lang]["PlateName"].split("|")[0]} ${i} ${translations[lang][material]} ${translations[lang]["PlateName"].split("|")[1]}`;
+                    locales.global[lang][`${armorPlate._id} ShortName`] = `${level[i]} ${translations[lang][material]} C.`;
+                    locales.global[lang][`${armorPlate._id} Description`] = `${translations[lang][material]}${translations[lang]["PlateDescription"].split("|")[0]}${level[i]}${translations[lang]["PlateDescription"].split("|")[1]}`;
+                }
 
                 database.templates.handbook.Items.push(
                     {
@@ -311,13 +298,11 @@ class plates implements IPostDBLoadMod {
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
-                locales.global["en"][`${fullArmorPlate._id} Name`] = `Class ${i} ${material == "ArmoredSteel" ? "Steel" : material} Full-Size Plate`;
-                locales.global["en"][`${fullArmorPlate._id} ShortName`] = `${i} ${material == "ArmoredSteel" ? "Steel" : material} F.`;
-                locales.global["en"][`${fullArmorPlate._id} Description`] = `${material == "ArmoredSteel" ? "Steel" : material} multi-hit ballistic plate of level ${level[i]} protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it.`;
-
-                locales.global["ch"][`${fullArmorPlate._id} Name`] = `Class ${i} ${dictionaryCN[material]} 全尺寸防弹插板`;
-                locales.global["ch"][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${dictionaryCN[material]} F.`;
-                locales.global["ch"][`${fullArmorPlate._id} Description`] = `${dictionaryCN[material]}制${level[i]}级保护的多重防弹插板，设计用于全尺寸防弹背心以保护胃部，也就是说，只要足够大以容纳它。`;
+                for (const lang in translations) {
+                    locales.global[lang][`${fullArmorPlate._id} Name`] = `${translations[lang]["FullPlateName"].split("|")[0]} ${i} ${translations[lang][material]} ${translations[lang]["FullPlateName"].split("|")[1]}`;
+                    locales.global[lang][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${translations[lang][material]} F.`;
+                    locales.global[lang][`${fullArmorPlate._id} Description`] = `${translations[lang][material]}${translations[lang]["FullPlateDescription"].split("|")[0]}${level[i]}${translations[lang]["FullPlateDescription"].split("|")[1]}`;
+                }
 
                 database.templates.handbook.Items.push(
                     {
@@ -649,6 +634,7 @@ interface IConfig {
 }
 
 interface IGenerationConfig {
+    UserLocale: string
     IgnoreIntegratedArmors: boolean
     ChangeMaterialDestructibility: boolean
     TweakBackgroundColor: boolean

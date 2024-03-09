@@ -2,7 +2,7 @@
   "name": "Realistic Plate System Reboot",
   "author": "WhiteMo",
   "license": "NCSA",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "main": "src/script.js",
   "akiVersion": "3.7.x",
   "scripts": {

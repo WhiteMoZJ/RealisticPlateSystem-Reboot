@@ -1,0 +1,38 @@
+{
+    "en": {
+        "UHMWPE": "UHMWPE",
+        "Aramid": "Aramid",
+        "Ceramic": "Ceramic",
+        "Titan": "Titan",
+        "Aluminium": "Aluminium",
+        "Combined": "Combined",
+        "ArmoredSteel": "ArmoredSteel",
+        "Glass": "Glass",
+        "Armor Plates": "Armor Plates",
+        "Bag": "Ballistic Plate Storage Bag",
+        "Bag_s": "Plate Bag",
+        "BagDescription": "A large, durable carry bag meant for easy storing and moving of multiple armor plates. Used commonly by military forces for rapid deployment and access of replacement ballistic plates for soldiers in combat zones.",
+        "PlateName": "Class|Ballistic Plate",
+        "PlateDescription": " multi-hit ballistic plate of level | protection designed for use in a plate carrier to protect the vitals.",
+        "FullPlateName": "Class|Ballistic Plate",
+        "FullPlateDescription": " multi-hit ballistic plate of level | protection designed as a plate to also protect the stomach, that is, if the carrier is large enough to fit it."
+    },
+    "ch": {
+        "UHMWPE": "高分子PE",
+        "Aramid": "芳纶",
+        "Ceramic": "陶瓷",
+        "Titan": "钛",
+        "Aluminium": "铝",
+        "Combined": "复合材料",
+        "ArmoredSteel": "装甲钢",
+        "Glass": "玻璃纤维",
+        "Armor Plates": "防弹插板",
+        "Bag": "插板储存袋",
+        "Bag_s": "插板袋",
+        "BagDescription": "一个大而耐用的手提袋，便于存放和运输多个装甲板。军队通常用于快速部署并为战区士兵提供替换防弹板。",
+        "PlateName": "Class|防弹插板",
+        "PlateDescription": "制|级保护的多重防弹插板，设计用于防弹背心插槽，以保护生命体征。",
+        "FullPlateName": "Class|全尺寸防弹插板",
+        "FullPlateDescription": "制|级保护的多重防弹插板，设计用于全尺寸防弹背心以保护胃部，也就是说，只要足够大以容纳它。" 
+    }
+}
