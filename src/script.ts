@@ -195,9 +195,6 @@ class plates implements IPostDBLoadMod {
                 if (i >= 3 && i <= 5) {
                     armorPlate._props.BluntThroughput *= 1.25;
                 }
-                if (i === 6) {
-                    armorPlate._props.BluntThroughput *= 1;
-                }
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
                 armorPlate._props.RepairCost = 50 * priceMult;
                 armorPlate._props.LootExperience = i;
@@ -284,9 +281,6 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
                 if (i >= 3 && i <= 5) {
                     fullArmorPlate._props.BluntThroughput *= 1.25;
-                }
-                if (i === 6) {
-                    fullArmorPlate._props.BluntThroughput *= 1;
                 }
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 70 * priceMult;
@@ -389,6 +383,7 @@ class plates implements IPostDBLoadMod {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
                     item._props.MaxDurability *= 2;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
                 
@@ -397,6 +392,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
                     item._props.Durability = 128;
                     item._props.MaxDurability = 128;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -404,6 +400,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "64be79c487d1510151095552" || item._id == "64be79e2bf8412471d0d9bcc") {
                     item._props.Durability = 128;
                     item._props.MaxDurability = 128;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -411,6 +408,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5ab8e4ed86f7742d8e50c7fa") {
                     item._props.Durability = 100;
                     item._props.MaxDurability = 100;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -418,6 +416,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5c0e3eb886f7742015526062") {
                     item._props.Durability = 160;
                     item._props.MaxDurability = 160;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -425,6 +424,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5d5d646386f7742797261fd9") {
                     item._props.Durability = 86;
                     item._props.MaxDurability = 86;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -432,6 +432,7 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5c0e446786f7742013381639") {
                     item._props.Durability = 110;
                     item._props.MaxDurability = 110;
+                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -570,24 +571,7 @@ class plates implements IPostDBLoadMod {
                 // reduce repair cost
                 item._props.RepairCost /= 10;
 
-                let price = database.templates.prices[item._id];
-                price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
-                price = ((price * 0.1).toString().split(".")[0]) as unknown as number;
-
-                Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
-                database.templates.prices[item._id] = price;
-
-                for (let trader in database.traders) {
-                    if (database.traders[trader].assort == undefined)
-                        continue;
-
-                    let index = database.traders[trader].assort.items.findIndex(entry => entry._tpl == item._id);
-
-                    if (index != -1) {
-                        let id = database.traders[trader].assort.items[index]._id;
-                        database.traders[trader].assort.barter_scheme[id][0][0].count *= 0.1;
-                    }
-                }
+                this.tweakPrice(item, 0.1);
 
                 Logger.info(`[WM-RPSR] Tweaked Armor[${item._id}]`);
 
@@ -624,6 +608,28 @@ class plates implements IPostDBLoadMod {
             Logger.info(`[WM-RPSR] Tweaked Armor Damage`);
         }
         
+    }
+
+    private tweakPrice(item:ITemplateItem, percent:number): void
+    {
+        let price = database.templates.prices[item._id];
+        price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
+        price = ((price * percent).toString().split(".")[0]) as unknown as number;
+
+        Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
+        database.templates.prices[item._id] = price;
+
+        for (let trader in database.traders) {
+            if (database.traders[trader].assort == undefined)
+                continue;
+
+            let index = database.traders[trader].assort.items.findIndex(entry => entry._tpl == item._id);
+
+            if (index != -1) {
+                let id = database.traders[trader].assort.items[index]._id;
+                database.traders[trader].assort.barter_scheme[id][0][0].count *= percent;
+            }
+        }
     }
 }
 
