@@ -33,8 +33,6 @@ export const dictionaryCN: Record<string, string> =
 
 export const level: Record<number, string> =
 {
-    1: "Ⅰ",
-    2: "Ⅱ",
     3: "Ⅲ",
     4: "Ⅳ",
     5: "Ⅴ",
@@ -42,15 +40,12 @@ export const level: Record<number, string> =
     // you can add more if you need
 };
 
-export const materialColor: Record<string, string> = 
+export const levelColor: Record<number, string> = 
 {
-    "UHMWPE": "violet",
-    "Aramid": "default",
-    "Ceramic": "yellow",
-    "Titan": "blue",
-    "Aluminium": "orange",
-    "Combined": "green",
-    "ArmoredSteel": "red"
+    3: "green",
+    4: "blue",
+    5: "violet",
+    6: "red"
 };
 
 const config = require("../config.json") as IConfig;
@@ -71,7 +66,7 @@ class plates implements IPostDBLoadMod {
             this.createPlates();
             this.tweakCarriers();
             this.createContainer();
-            this.armorBluntMulti();
+            this.tweakAmmoDamage();
         } catch (e) {
             Logger.error(`[WM-RPSR] Unable to generate, exception thrown => ${e}`);
         }
@@ -208,13 +203,19 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.mousePenalty = i * -0.2 * materialPenaltyMult;
                 armorPlate._props.weaponErgonomicPenalty = -1;
                 armorPlate._props.BluntThroughput = bluntMat;
+                if (i >= 3 && i <= 5) {
+                    armorPlate._props.BluntThroughput *= 1.25;
+                }
+                if (i === 6) {
+                    armorPlate._props.BluntThroughput *= 1;
+                }
                 armorPlate._props.ArmorType = i > 4 ? "Heavy" : "Light";
                 armorPlate._props.RepairCost = 50 * priceMult;
                 armorPlate._props.LootExperience = i;
                 armorPlate._props.ItemSound = "gear_helmet";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
-                    armorPlate._props.BackgroundColor = materialColor[material];
+                    armorPlate._props.BackgroundColor = levelColor[i];
 
                 items[armorPlate._id] = armorPlate
 
@@ -230,7 +231,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": armorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 3000 * i * priceMult
+                        "Price": 4500 * i * priceMult
                     }
                 );
 
@@ -252,7 +253,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 3000 * i * priceMult
+                            count: 4500 * i * priceMult
                         }]
                     ];
 
@@ -294,13 +295,19 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.mousePenalty = i * -0.3 * materialPenaltyMult;
                 fullArmorPlate._props.weaponErgonomicPenalty = -1;
                 fullArmorPlate._props.BluntThroughput = bluntMat * 0.8;
+                if (i >= 3 && i <= 5) {
+                    fullArmorPlate._props.BluntThroughput *= 1.25;
+                }
+                if (i === 6) {
+                    fullArmorPlate._props.BluntThroughput *= 1;
+                }
                 fullArmorPlate._props.ArmorType = i > 3 ? "Heavy" : "Light";
                 fullArmorPlate._props.RepairCost = 70 * priceMult;
                 fullArmorPlate._props.LootExperience = i;
                 fullArmorPlate._props.ItemSound = "container_case";
 
                 if (config.GenerationConfig.TweakBackgroundColor)
-                    fullArmorPlate._props.BackgroundColor = materialColor[material];
+                    fullArmorPlate._props.BackgroundColor = levelColor[i];
 
                 items[fullArmorPlate._id] = fullArmorPlate
 
@@ -316,7 +323,7 @@ class plates implements IPostDBLoadMod {
                     {
                         "Id": fullArmorPlate._id,
                         "ParentId": "plate_category",
-                        "Price": 4500 * i * priceMult
+                        "Price": 6500 * i * priceMult
                     }
                 );
 
@@ -338,7 +345,7 @@ class plates implements IPostDBLoadMod {
                     [
                         [{
                             _tpl: "5449016a4bdc2d6f028b456f",
-                            count: 4500 * i * priceMult
+                            count: 6500 * i * priceMult
                         }]
                     ]
 
@@ -356,19 +363,42 @@ class plates implements IPostDBLoadMod {
     public tweakCarriers(): void
     {
         Object.values(items).forEach(item => {
+            // Headwear
             if (item._parent == "5a341c4086f77401f2541505" && item._props.armorClass > 0) {
-                // increase headwear durability
                 item._props.Durability *= 1.1;
                 item._props.MaxDurability *= 1.1;
                 return;
             }
 
+            // ArmoredEquipment
             if (item._parent == "57bef4c42459772e8d35a53b" && item._props.armorClass > 0 && item._id.search(/plate/gi) == -1) {
-                // increase headwear durability
                 item._props.Durability *= 1.25;
                 item._props.MaxDurability *= 1.25;
                 return;
             }
+
+            // Visors
+            if (item._parent == "5448e5724bdc2ddf718b4568" && item._props.armorClass == 0) {
+                item._props.Durability = 15;
+                item._props.armorClass = 1;
+                if (item._id == "59e770b986f7742cbd762754" || item._id == "5b432be65acfc433000ed01f" || item._id == "0010321_GEARSET_ANTIFRAG") {
+                    item._props.Durability = 30;
+                    item._props.armorClass = 2;
+                }
+                item._props.MaxDurability = item._props.Durability;
+                item._props.BluntThroughput = 0.35 * (1 - item._props.BlindnessProtection);
+                item._props.RepairCost = 500 * (1 + item._props.BlindnessProtection / 2);
+                item._props.ArmorMaterial = "Glass";
+                item._props.armorZone = ["Head"];
+                item._props.headSegments = ["Eyes"];
+                item._props.RicochetParams = {
+                    "x": 0.7,
+                    "y": 0.3,
+                    "z": 55
+                }
+                return;
+            }
+
 
             if (item._parent == "5448e5284bdc2dcb718b4567" && item._props.armorClass > 0 || item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0) {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
@@ -553,11 +583,11 @@ class plates implements IPostDBLoadMod {
                 item._props.Weight *= weightRetainPer;
 
                 // reduce repair cost
-                item._props.RepairCost /= 5;
+                item._props.RepairCost /= 10;
 
                 let price = database.templates.prices[item._id];
                 price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
-                price = ((price * 0.3).toString().split(".")[0]) as unknown as number;
+                price = ((price * 0.1).toString().split(".")[0]) as unknown as number;
 
                 Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
                 database.templates.prices[item._id] = price;
@@ -570,7 +600,7 @@ class plates implements IPostDBLoadMod {
 
                     if (index != -1) {
                         let id = database.traders[trader].assort.items[index]._id;
-                        database.traders[trader].assort.barter_scheme[id][0][0].count *= 0.3;
+                        database.traders[trader].assort.barter_scheme[id][0][0].count *= 0.1;
                     }
                 }
 
@@ -597,20 +627,18 @@ class plates implements IPostDBLoadMod {
         });
     }
 
-    public armorBluntMulti(): void
+    public tweakAmmoDamage(): void
     {
-        Object.values(items).forEach(item => {
-            if (item._parent == "plate_category" && item._props.armorClass != null) {
-                let armorLevl: number = typeof item._props.armorClass === 'number' ? item._props.armorClass : parseInt(item._props.armorClass as string);
-                
-                if (armorLevl >= 3 && armorLevl <= 5) {
-                    item._props.BluntThroughput *= 1.25;
+        if (config.GenerationConfig.TweakAmmoDamage) {
+            Object.values(items).forEach(item => {
+                if (item._parent == "5485a8684bdc2da71d8b4567" && item._props.ArmorDamage != null) {
+                    item._props.ArmorDamage *= 0.9;
                 }
-                if (armorLevl === 6) {
-                    item._props.BluntThroughput *= 1;
-                }
-            }
-        })
+            })
+
+            Logger.info(`[WM-RPSR] Tweaked Armor Damage`);
+        }
+        
     }
 }
 
@@ -624,6 +652,7 @@ interface IGenerationConfig {
     IgnoreIntegratedArmors: boolean
     ChangeMaterialDestructibility: boolean
     TweakBackgroundColor: boolean
+    TweakAmmoDamage: boolean
 }
 
 interface IBotGenerationConfig {

@@ -3,7 +3,8 @@
     {
         "IgnoreIntegratedArmors": true,
         "ChangeMaterialDestructibility": true,
-        "TweakBackgroundColor": true
+        "TweakBackgroundColor": true,
+        "TweakAmmoDamage": true
     },
     "BotGenConfig":
     {
