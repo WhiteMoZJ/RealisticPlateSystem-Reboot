@@ -6,6 +6,7 @@ import { JsonUtil } from "@spt-aki/utils/JsonUtil";
 import { IDatabaseTables } from "@spt-aki/models/spt/server/IDatabaseTables";
 import { ILocaleBase } from "@spt-aki/models/spt/server/ILocaleBase";
 import { ITemplateItem } from "@spt-aki/models/eft/common/tables/ITemplateItem";
+import translations from "./translations.json";
 
 let Logger: ILogger;
 let database: IDatabaseTables;
@@ -39,7 +40,6 @@ export const levelColor: Record<number, string> =
 
 const config = require("../config.json") as IConfig;
 const weightRetainPer = 0.2;
-import translations from "./translations.json";
 
 class plates implements IPostDBLoadMod {
     public postDBLoad(container: DependencyContainer): void
@@ -186,7 +186,7 @@ class plates implements IPostDBLoadMod {
                 armorPlate._props.armorClass = i;
                 armorPlate._props.armorZone = ["Chest"];
                 armorPlate._props.Durability = 40 + durBase + (i * 5);
-                armorPlate._props.MaxDurability = 40 + durBase + (i * 5);
+                armorPlate._props.MaxDurability = armorPlate._props.Durability;
                 armorPlate._props.ArmorMaterial = material;
                 armorPlate._props.speedPenaltyPercent = i * -0.3 * materialPenaltyMult;
                 armorPlate._props.mousePenalty = i * -0.2 * materialPenaltyMult;
@@ -273,7 +273,7 @@ class plates implements IPostDBLoadMod {
                 fullArmorPlate._props.armorClass = i;
                 fullArmorPlate._props.armorZone = ["Chest", "Stomach"];
                 fullArmorPlate._props.Durability = 55 + durBase + (i * 5);
-                fullArmorPlate._props.MaxDurability = 55 + durBase + (i * 5);
+                fullArmorPlate._props.MaxDurability = fullArmorPlate._props.Durability;
                 fullArmorPlate._props.ArmorMaterial = material;
                 fullArmorPlate._props.speedPenaltyPercent = i * -0.4 * materialPenaltyMult;
                 fullArmorPlate._props.mousePenalty = i * -0.3 * materialPenaltyMult;
@@ -344,15 +344,12 @@ class plates implements IPostDBLoadMod {
         Object.values(items).forEach(item => {
             // Headwear
             if (item._parent == "5a341c4086f77401f2541505" && item._props.armorClass > 0) {
-                item._props.Durability *= 1.1;
-                item._props.MaxDurability *= 1.1;
-                return;
-            }
-
-            // ArmoredEquipment
-            if (item._parent == "57bef4c42459772e8d35a53b" && item._props.armorClass > 0 && item._id.search(/plate/gi) == -1) {
-                item._props.Durability *= 1.25;
-                item._props.MaxDurability *= 1.25;
+                if (item._id == "59e7711e86f7746cae05fbe1") {
+                    item._props.headSegments.push("Nape");
+                    item._props.headSegments.push("Ears");
+                }      
+                item._props.Durability *= 0.6 * item._props.headSegments.length;
+                item._props.MaxDurability = item._props.Durability;
                 return;
             }
 
@@ -382,7 +379,7 @@ class plates implements IPostDBLoadMod {
             if (item._parent == "5448e5284bdc2dcb718b4567" && item._props.armorClass > 0 || item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0) {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
-                    item._props.MaxDurability *= 2;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -391,7 +388,7 @@ class plates implements IPostDBLoadMod {
                 // 6B2
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
                     item._props.Durability = 128;
-                    item._props.MaxDurability = 128;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -399,7 +396,7 @@ class plates implements IPostDBLoadMod {
                 // NPP KlASS Kora-Kulon
                 if (item._id == "64be79c487d1510151095552" || item._id == "64be79e2bf8412471d0d9bcc") {
                     item._props.Durability = 128;
-                    item._props.MaxDurability = 128;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -407,7 +404,7 @@ class plates implements IPostDBLoadMod {
                 // MF-UNTAR
                 if (item._id == "5ab8e4ed86f7742d8e50c7fa") {
                     item._props.Durability = 100;
-                    item._props.MaxDurability = 100;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -415,7 +412,7 @@ class plates implements IPostDBLoadMod {
                 // 6B5-16
                 if (item._id == "5c0e3eb886f7742015526062") {
                     item._props.Durability = 160;
-                    item._props.MaxDurability = 160;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -423,7 +420,7 @@ class plates implements IPostDBLoadMod {
                 // 6B3TM-01
                 if (item._id == "5d5d646386f7742797261fd9") {
                     item._props.Durability = 86;
-                    item._props.MaxDurability = 86;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -431,7 +428,7 @@ class plates implements IPostDBLoadMod {
                 // 6B5-15
                 if (item._id == "5c0e446786f7742013381639") {
                     item._props.Durability = 110;
-                    item._props.MaxDurability = 110;
+                    item._props.MaxDurability = item._props.Durability;
                     this.tweakPrice(item, 0.5);
                     return;
                 }
@@ -492,7 +489,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;  
+                    item._props.MaxDurability = item._props.Durability;  
                 }
 
                 // HPC
@@ -502,7 +499,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;
+                    item._props.MaxDurability = item._props.Durability;
                 }
 
                 // TT SK
@@ -512,7 +509,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;
+                    item._props.MaxDurability = item._props.Durability;
                 }
 
                 // S&S
@@ -522,7 +519,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;
+                    item._props.MaxDurability = item._props.Durability;
                 }
 
                 // MBSS
@@ -532,7 +529,7 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = -1;
                     item._props.armorClass = 1;
                     item._props.Durability = 10;
-                    item._props.MaxDurability = 10;
+                    item._props.MaxDurability = item._props.Durability;
                 }
 
                 // LBT 6094A
@@ -543,20 +540,20 @@ class plates implements IPostDBLoadMod {
                     item._props.mousePenalty = 0;
                     item._props.armorClass = 3;
                     item._props.Durability = 100;
-                    item._props.MaxDurability = 100;
+                    item._props.MaxDurability = item._props.Durability;
                 }
 
                 else {
                     if (item._props.ArmorType == "Heavy" || hasArms) {
                         item._props.armorClass = 3;
                         item._props.Durability *= 3;
-                        item._props.MaxDurability *= 3;
+                        item._props.MaxDurability = item._props.Durability;
                         item._props.BluntThroughput *= 0.85;               
                     }
                     else {
                         item._props.armorClass = 2;
                         item._props.Durability *= 2;
-                        item._props.MaxDurability *= 2;
+                        item._props.MaxDurability = item._props.Durability;
                         
                     }
                     
