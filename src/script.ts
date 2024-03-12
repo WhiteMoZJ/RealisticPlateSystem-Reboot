@@ -19,6 +19,7 @@ let scavFullPlates = [] as string[];
 let bossPlates = [] as string[];
 let bossFullPlates = [] as string[];
 let locales: ILocaleBase;
+let priceRemain: number;
 // let translations: Record<string, Record<string, string>>
 
 export const level: Record<number, string> =
@@ -206,9 +207,9 @@ class plates implements IPostDBLoadMod {
                 items[armorPlate._id] = armorPlate
 
                 for (const lang in translations) {
-                    locales.global[lang][`${armorPlate._id} Name`] = `${translations[lang]["PlateName"].split("|")[0]} ${i} ${translations[lang][material]} ${translations[lang]["PlateName"].split("|")[1]}`;
-                    locales.global[lang][`${armorPlate._id} ShortName`] = `${level[i]} ${translations[lang][material]} C.`;
-                    locales.global[lang][`${armorPlate._id} Description`] = `${translations[lang][material]}${translations[lang]["PlateDescription"].split("|")[0]}${level[i]}${translations[lang]["PlateDescription"].split("|")[1]}`;
+                    locales.global[lang][`${armorPlate._id} Name`] = `${translations[lang]["PlateName"].split("|")[0]} ${i} ${locales.global[lang]["Mat" + material]} ${translations[lang]["PlateName"].split("|")[1]}`;
+                    locales.global[lang][`${armorPlate._id} ShortName`] = `${level[i]} ${locales.global[lang]["Mat" + material]} C.`;
+                    locales.global[lang][`${armorPlate._id} Description`] = `${locales.global[lang]["Mat" + material]}${translations[lang]["PlateDescription"].split("|")[0]}${level[i]}${translations[lang]["PlateDescription"].split("|")[1]}`;
                 }
 
                 database.templates.handbook.Items.push(
@@ -293,9 +294,9 @@ class plates implements IPostDBLoadMod {
                 items[fullArmorPlate._id] = fullArmorPlate
 
                 for (const lang in translations) {
-                    locales.global[lang][`${fullArmorPlate._id} Name`] = `${translations[lang]["FullPlateName"].split("|")[0]} ${i} ${translations[lang][material]} ${translations[lang]["FullPlateName"].split("|")[1]}`;
-                    locales.global[lang][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${translations[lang][material]} F.`;
-                    locales.global[lang][`${fullArmorPlate._id} Description`] = `${translations[lang][material]}${translations[lang]["FullPlateDescription"].split("|")[0]}${level[i]}${translations[lang]["FullPlateDescription"].split("|")[1]}`;
+                    locales.global[lang][`${fullArmorPlate._id} Name`] = `${translations[lang]["FullPlateName"].split("|")[0]} ${i} ${locales.global[lang]["Mat" + material]} ${translations[lang]["FullPlateName"].split("|")[1]}`;
+                    locales.global[lang][`${fullArmorPlate._id} ShortName`] = `${level[i]} ${locales.global[lang]["Mat" + material]} F.`;
+                    locales.global[lang][`${fullArmorPlate._id} Description`] = `${locales.global[lang]["Mat" + material]}${translations[lang]["FullPlateDescription"].split("|")[0]}${level[i]}${translations[lang]["FullPlateDescription"].split("|")[1]}`;
                 }
 
                 database.templates.handbook.Items.push(
@@ -380,7 +381,6 @@ class plates implements IPostDBLoadMod {
                 if (config.GenerationConfig.IgnoreIntegratedArmors && item._props.ArmorMaterial == "Aramid") {
                     item._props.Durability *= 2;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
                 
@@ -389,7 +389,6 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5df8a2ca86f7740bfe6df777") {
                     item._props.Durability = 128;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -397,7 +396,6 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "64be79c487d1510151095552" || item._id == "64be79e2bf8412471d0d9bcc") {
                     item._props.Durability = 128;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -405,7 +403,6 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5ab8e4ed86f7742d8e50c7fa") {
                     item._props.Durability = 100;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -413,7 +410,6 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5c0e3eb886f7742015526062") {
                     item._props.Durability = 160;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -421,7 +417,6 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5d5d646386f7742797261fd9") {
                     item._props.Durability = 86;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
 
@@ -429,12 +424,8 @@ class plates implements IPostDBLoadMod {
                 if (item._id == "5c0e446786f7742013381639") {
                     item._props.Durability = 110;
                     item._props.MaxDurability = item._props.Durability;
-                    this.tweakPrice(item, 0.5);
                     return;
                 }
-
-                if (item._parent == "5448e54d4bdc2dcc718b4568" && item._props.armorClass > 0)
-                    item._props.MergesWithChildren = true;
 
                 let isSmallBoi = !(item._id == "0010321_GEARSET_QUICK000" || 
                                     item._id == "5c0e51be86f774598e797894" || item._id == "5c0e53c886f7747fa54205c7" || item._id == "5c0e541586f7747fa54205c9" ||
@@ -568,7 +559,30 @@ class plates implements IPostDBLoadMod {
                 // reduce repair cost
                 item._props.RepairCost /= 10;
 
-                this.tweakPrice(item, 0.1);
+                
+                if (item._parent == "5448e54d4bdc2dcc718b4568")
+                    priceRemain = 0.1;
+                else if (item._parent == "5448e5284bdc2dcb718b4567")
+                    priceRemain = 0.2;
+
+                let price = database.templates.prices[item._id];
+                price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
+                price = ((price * priceRemain).toString().split(".")[0]) as unknown as number;
+
+                Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
+                database.templates.prices[item._id] = price;
+
+                for (let trader in database.traders) {
+                    if (database.traders[trader].assort == undefined)
+                        continue;
+
+                    let index = database.traders[trader].assort.items.findIndex(entry => entry._tpl == item._id);
+
+                    if (index != -1) {
+                        let id = database.traders[trader].assort.items[index]._id;
+                        database.traders[trader].assort.barter_scheme[id][0][0].count *= priceRemain;
+                    }
+                }
 
                 Logger.info(`[WM-RPSR] Tweaked Armor[${item._id}]`);
 
@@ -605,28 +619,6 @@ class plates implements IPostDBLoadMod {
             Logger.info(`[WM-RPSR] Tweaked Armor Damage`);
         }
         
-    }
-
-    private tweakPrice(item:ITemplateItem, percent:number): void
-    {
-        let price = database.templates.prices[item._id];
-        price = Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price;
-        price = ((price * percent).toString().split(".")[0]) as unknown as number;
-
-        Object.values(database.templates.handbook.Items).find(a => a.Id == item._id).Price = price;
-        database.templates.prices[item._id] = price;
-
-        for (let trader in database.traders) {
-            if (database.traders[trader].assort == undefined)
-                continue;
-
-            let index = database.traders[trader].assort.items.findIndex(entry => entry._tpl == item._id);
-
-            if (index != -1) {
-                let id = database.traders[trader].assort.items[index]._id;
-                database.traders[trader].assort.barter_scheme[id][0][0].count *= percent;
-            }
-        }
     }
 }
 
