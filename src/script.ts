@@ -440,35 +440,38 @@ class plates implements IPostDBLoadMod {
                 
                 if (isSmallBoi) {
                     item._props.Slots.push({
-                            "_name": "mod_equipment_plate",
-                            "_id": `${item._id}_mainPlateSlot`,
-                            "_parent": item._id,
-                            "_props": {
-                                "filters": [
+                            _name: "mod_equipment_plate",
+                            _id: `${(Number(item._id) + 3).toString()}`,
+                            _parent: item._id,
+                            _props: {
+                                filters: [
                                     {
-                                        "Filter": Plates
+                                        Filter: Plates,
+                                        Shift: 0
                                     }
-                                ]
+                                ],
+                                
                             },
-                            "_required": false,
-                            "_mergeSlotWithChildren": true,
+                            _required: false,
+                            _mergeSlotWithChildren: true,
                             _proto: "55d30c4c4bdc2db4468b457e"
                     });
                 }
                 else {
                     item._props.Slots.push({
-                            "_name": "mod_equipment_full",
-                            "_id": `${item._id}_mainFullPlateSlot`,
-                            "_parent": item._id,
-                            "_props": {
-                                "filters": [
+                            _name: "mod_equipment_full",
+                            _id: `${(Number(item._id) + 4).toString()}`,
+                            _parent: item._id,
+                            _props: {
+                                filters: [
                                     {
-                                        "Filter": FullPlates
+                                        Filter: FullPlates,
+                                        Shift: 0
                                     }
                                 ]
                             },
-                            "_required": false,
-                            "_mergeSlotWithChildren": true,
+                            _required: false,
+                            _mergeSlotWithChildren: true,
                             _proto: "55d30c4c4bdc2db4468b457e"
                     });
                 }
